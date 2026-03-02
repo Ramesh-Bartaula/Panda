@@ -14,7 +14,7 @@ const noMessages = [
     "Are you positive cutie 🥰? 🤔",
     "Panda please...🥺",
     "If you say no, I will be really sad...",
-    "I will be very sad... 😢",
+    "I will be very sad...😢",
     "Please panda 🥺🐼??? 💔",
     "Don't do this to me...",
     "Last chance! 😭",
