@@ -1,36 +1,934 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Will you be love of my life ? ❤️ </title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Will you be the love of my life? 🌸</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 100vw; height: 100vh;
+    overflow: hidden;
+    background: #08051a;
+    font-family: 'Nunito', sans-serif;
+    user-select: none;
+  }
+
+  /* ── Starfield canvas ── */
+  #starfield {
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ── Scene SVG ── */
+  #scene {
+    position: fixed; inset: 0;
+    width: 100%; height: 100%;
+    z-index: 1;
+  }
+
+  /* ── Fireflies ── */
+  .firefly {
+    position: fixed;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    pointer-events: none; z-index: 3;
+    animation: ffloat ease-in-out infinite;
+  }
+  @keyframes ffloat {
+    0%,100% { transform:translate(0,0); opacity:0; }
+    15%      { opacity:1; }
+    50%      { transform:translate(var(--dx),var(--dy)); opacity:.9; }
+    85%      { opacity:.7; }
+  }
+
+  /* ── Petals ── */
+  .petal {
+    position: fixed;
+    pointer-events: none; z-index: 3;
+    animation: petalFall linear infinite;
+    opacity: 0;
+  }
+  @keyframes petalFall {
+    0%   { transform:translateY(-30px) rotate(0deg) translateX(0); opacity:0; }
+    8%   { opacity:.85; }
+    88%  { opacity:.6; }
+    100% { transform:translateY(105vh) rotate(640deg) translateX(40px); opacity:0; }
+  }
+
+  /* ── Content overlay ── */
+  #content {
+    position: fixed; inset: 0; z-index: 10;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-end;
+    padding-bottom: 6vh;
+    pointer-events: none;
+  }
+
+  .glass-card {
+    pointer-events: all;
+    background: rgba(10,6,30,0.55);
+    backdrop-filter: blur(18px) saturate(1.4);
+    -webkit-backdrop-filter: blur(18px) saturate(1.4);
+    border: 1px solid rgba(255,220,255,0.18);
+    border-radius: 28px;
+    padding: 2.2rem 3rem 2rem;
+    text-align: center;
+    max-width: 500px; width: 92%;
+    box-shadow:
+      0 0 60px rgba(180,100,220,0.12),
+      0 12px 48px rgba(0,0,0,0.55),
+      inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+
+  .panda-icon {
+    font-size: 2.6rem;
+    display: block;
+    margin-bottom: .4rem;
+    animation: gentleBob 3s ease-in-out infinite;
+  }
+  @keyframes gentleBob {
+    0%,100%{ transform:translateY(0) rotate(-3deg); }
+    50%    { transform:translateY(-8px) rotate(3deg); }
+  }
+
+  .question {
+    font-family: 'Crimson Pro', serif;
+    font-style: italic;
+    font-size: clamp(1.5rem, 3.5vw, 2.1rem);
+    color: #ffeef8;
+    line-height: 1.35;
+    margin-bottom: .5rem;
+    text-shadow: 0 2px 20px rgba(200,100,200,0.4);
+    letter-spacing: .01em;
+  }
+
+  .tagline {
+    font-size: .78rem;
+    color: rgba(255,220,255,0.5);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 1.8rem;
+  }
+
+  .btns {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  #yes-btn {
+    background: linear-gradient(135deg, #d94f8a 0%, #e8709e 50%, #f590b8 100%);
+    color: #fff;
+    border: none;
+    padding: .85rem 2.6rem;
+    border-radius: 50px;
+    font-size: 1.05rem;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    cursor: pointer;
+    letter-spacing: .05em;
+    transition: transform .2s, box-shadow .2s;
+    box-shadow: 0 4px 24px rgba(220,80,140,0.5);
+    transform-origin: center;
+  }
+  #yes-btn:hover {
+    transform: scale(1.09) translateY(-2px);
+    box-shadow: 0 8px 32px rgba(220,80,140,0.65);
+  }
+  #yes-btn:active { transform: scale(.97); }
+
+  #no-btn {
+    position: fixed;
+    background: transparent;
+    color: rgba(255,220,255,0.55);
+    border: 1px solid rgba(255,220,255,0.25);
+    padding: .85rem 2rem;
+    border-radius: 50px;
+    font-size: 1.05rem;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: .04em;
+    transition: color .15s, border-color .15s;
+    z-index: 15;
+    /* initial pos set via JS after load */
+  }
+  #no-btn:hover { color: rgba(255,220,255,.3); border-color: rgba(255,220,255,.15); }
+
+  /* ── Toast ── */
+  #toast {
+    position: fixed;
+    top: 22px; left: 50%;
+    transform: translateX(-50%);
+    background: rgba(10,6,30,.75);
+    backdrop-filter: blur(10px);
+    color: #ffd8f0;
+    padding: .55rem 1.6rem;
+    border-radius: 50px;
+    font-size: .88rem;
+    border: 1px solid rgba(255,180,230,.2);
+    opacity: 0;
+    transition: opacity .3s;
+    z-index: 100;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  /* ── Music button ── */
+  #music-btn {
+    position: fixed;
+    bottom: 22px; right: 22px;
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    background: rgba(10,6,30,.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,200,240,.2);
+    color: #ffd8f0;
+    font-size: 1.2rem;
+    cursor: pointer;
+    z-index: 100;
+    transition: background .2s, transform .15s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #music-btn:hover { background: rgba(30,15,60,.8); transform: scale(1.08); }
+
+  /* ── Yes overlay ── */
+  #yes-page {
+    display: none;
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(8,5,26,.92);
+    align-items: center; justify-content: center;
+    flex-direction: column; text-align: center;
+    gap: .6rem;
+  }
+  #yes-page.show { display: flex; }
+
+  .yes-icon {
+    font-size: 5rem;
+    animation: heartPop .6s cubic-bezier(.36,.07,.19,.97) infinite alternate;
+    display: block;
+  }
+  @keyframes heartPop {
+    from { transform: scale(1) rotate(-5deg); }
+    to   { transform: scale(1.15) rotate(5deg); }
+  }
+  .yes-headline {
+    font-family: 'Crimson Pro', serif;
+    font-style: italic;
+    font-size: clamp(2rem,5vw,3.2rem);
+    color: #ffd0e8;
+    text-shadow: 0 0 40px rgba(255,120,180,.5);
+    animation: fadeUp 1s ease both;
+  }
+  .yes-sub {
+    font-family: 'Crimson Pro', serif;
+    font-style: italic;
+    font-size: 1.2rem;
+    color: rgba(255,200,230,.55);
+    animation: fadeUp 1.3s ease both;
+  }
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(24px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  /* ── Spark particles on Yes ── */
+  .spark {
+    position: fixed;
+    pointer-events: none;
+    z-index: 150;
+    border-radius: 50%;
+    animation: sparkUp 1.8s ease forwards;
+  }
+  @keyframes sparkUp {
+    0%   { opacity:1; transform:translate(0,0) scale(1); }
+    100% { opacity:0; transform:translate(var(--sx),var(--sy)) scale(.2); }
+  }
+</style>
 </head>
 <body>
-    <div class="hearts-bg"></div>
 
-    <div class="container">
-        <h1>Will you be love of my life ? ❤️ </h1>
+<!-- Stars -->
+<canvas id="starfield"></canvas>
 
-        <div class="gif-container">
-            <img id="cat-gif" src="https://media.tenor.com/EBV7OT7ACfwAAAAj/u-u-qua-qua-u-quaa.gif" alt="cute character">
-        </div>
+<!-- Scene: full SVG illustration (Ghibli-inspired original artwork) -->
+<svg id="scene" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice"
+     xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <!-- Sky -->
+  <linearGradient id="gSky" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%"   stop-color="#050310"/>
+    <stop offset="35%"  stop-color="#110830"/>
+    <stop offset="65%"  stop-color="#1e0f42"/>
+    <stop offset="100%" stop-color="#160d35"/>
+  </linearGradient>
+  <!-- Moon glow -->
+  <radialGradient id="gMoon" cx="50%" cy="50%" r="50%">
+    <stop offset="0%"   stop-color="#fff9f0" stop-opacity="1"/>
+    <stop offset="35%"  stop-color="#ffe8b0" stop-opacity=".7"/>
+    <stop offset="70%"  stop-color="#ffd080" stop-opacity=".25"/>
+    <stop offset="100%" stop-color="#ffbb44" stop-opacity="0"/>
+  </radialGradient>
+  <!-- Tree canopy glow -->
+  <radialGradient id="gCanopy" cx="50%" cy="60%" r="50%">
+    <stop offset="0%"   stop-color="#ffe8a0" stop-opacity=".28"/>
+    <stop offset="100%" stop-color="#ff9020" stop-opacity="0"/>
+  </radialGradient>
+  <!-- Lantern warm -->
+  <radialGradient id="gLan" cx="50%" cy="50%" r="50%">
+    <stop offset="0%"   stop-color="#ffee88" stop-opacity="1"/>
+    <stop offset="40%"  stop-color="#ffaa44" stop-opacity=".6"/>
+    <stop offset="100%" stop-color="#ff6600" stop-opacity="0"/>
+  </radialGradient>
+  <!-- Ground glow around couple -->
+  <radialGradient id="gGround" cx="50%" cy="0%" r="50%">
+    <stop offset="0%"   stop-color="#ffcc44" stop-opacity=".12"/>
+    <stop offset="100%" stop-color="#ffcc44" stop-opacity="0"/>
+  </radialGradient>
 
-        <div class="buttons">
-            <button id="yes-btn" onclick="handleYesClick()">Yes</button>
-            <button id="no-btn" onclick="handleNoClick()">No</button>
-        </div>
-        <div id="tease-toast"></div>
+  <!-- Soft blur filters -->
+  <filter id="f2"><feGaussianBlur stdDeviation="2"/></filter>
+  <filter id="f5"><feGaussianBlur stdDeviation="5"/></filter>
+  <filter id="f10"><feGaussianBlur stdDeviation="10"/></filter>
+  <filter id="f18"><feGaussianBlur stdDeviation="18"/></filter>
+
+  <clipPath id="fullClip"><rect width="1440" height="900"/></clipPath>
+</defs>
+
+<g clip-path="url(#fullClip)">
+
+<!-- ═══ SKY ═══ -->
+<rect width="1440" height="900" fill="url(#gSky)"/>
+
+<!-- Nebula/aurora wisps -->
+<ellipse cx="400"  cy="200" rx="380" ry="120" fill="#6030c0" opacity=".06" filter="url(#f18)"/>
+<ellipse cx="1050" cy="160" rx="340" ry="100" fill="#4060d0" opacity=".07" filter="url(#f18)"/>
+<ellipse cx="720"  cy="100" rx="420" ry="80"  fill="#8040b0" opacity=".05" filter="url(#f18)"/>
+
+<!-- ═══ MOON ═══ -->
+<!-- Outer glow -->
+<circle cx="820" cy="118" r="160" fill="url(#gMoon)" filter="url(#f10)"/>
+<!-- Moon disc -->
+<circle cx="820" cy="118" r="58" fill="#fff9ee"/>
+<!-- Shadow crescent -->
+<ellipse cx="838" cy="112" rx="50" ry="50" fill="#e8d498"/>
+<!-- Surface texture -->
+<circle cx="800" cy="130" r="9"  fill="#d6c480" opacity=".5"/>
+<circle cx="832" cy="148" r="6"  fill="#d6c480" opacity=".38"/>
+<circle cx="796" cy="103" r="5"  fill="#d6c480" opacity=".3"/>
+<circle cx="845" cy="108" r="4"  fill="#d6c480" opacity=".25"/>
+
+<!-- ═══ DISTANT MOUNTAINS ═══ -->
+<path d="M0 620 L120 520 L230 590 L340 500 L460 545 L580 480 L700 530 L820 465 L940 510
+         L1060 455 L1180 505 L1300 468 L1440 515 L1440 900 L0 900Z"
+      fill="#0c1820" opacity=".95"/>
+
+<!-- ═══ MID HILLS ═══ -->
+<path d="M0 660 Q120 620 240 638 Q380 658 500 615 Q640 570 760 600
+         Q880 625 1000 588 Q1140 548 1280 580 Q1360 598 1440 565
+         L1440 900 L0 900Z"
+      fill="#101e12"/>
+
+<!-- Hill highlights (rim light from moon) -->
+<path d="M500 615 Q640 570 760 600 Q880 625 1000 588" stroke="#1a3020" stroke-width="1" fill="none" opacity=".5"/>
+
+<!-- ═══ NEAR HILLS ═══ -->
+<path d="M0 700 Q160 672 300 685 Q460 700 600 660 Q740 622 880 650
+         Q1020 675 1160 645 Q1300 618 1440 640 L1440 900 L0 900Z"
+      fill="#142016"/>
+
+<!-- ═══ FOREGROUND GROUND ═══ -->
+<path d="M0 780 Q360 756 720 768 Q1080 780 1440 755 L1440 900 L0 900Z"
+      fill="#192818"/>
+
+<!-- Path / clearing -->
+<path d="M620 900 Q650 840 675 805 Q698 785 720 786 Q742 785 765 805
+         Q790 840 820 900Z"
+      fill="#1f3520" opacity=".45"/>
+
+<!-- Ground glow (lit by tree) -->
+<ellipse cx="720" cy="810" rx="200" ry="60" fill="url(#gGround)" filter="url(#f10)"/>
+
+<!-- ═══ GRASS TUFTS ═══ -->
+<!-- Left side -->
+<path d="M40 900  Q55 872 68 900"  fill="#1e3820"/>
+<path d="M80 900  Q100 868 115 900" fill="#1a3018"/>
+<path d="M155 900 Q168 876 178 900" fill="#1e3820"/>
+<path d="M290 900 Q305 874 316 900" fill="#1a3018"/>
+<path d="M390 900 Q402 880 412 900" fill="#1e3820"/>
+<path d="M500 900 Q512 878 523 900" fill="#1a3018"/>
+<!-- Right side -->
+<path d="M920 900  Q932 878 942 900"  fill="#1e3820"/>
+<path d="M1020 900 Q1034 874 1046 900" fill="#1a3018"/>
+<path d="M1150 900 Q1162 880 1172 900" fill="#1e3820"/>
+<path d="M1280 900 Q1296 870 1310 900" fill="#1a3018"/>
+<path d="M1380 900 Q1396 876 1408 900" fill="#1e3820"/>
+<!-- Near couple -->
+<path d="M580 900 Q593 882 603 900" fill="#223c22"/>
+<path d="M840 900 Q850 884 860 900" fill="#223c22"/>
+
+<!-- ═══ MAGICAL TREE ═══ -->
+
+<!-- Tree glow behind canopy -->
+<ellipse cx="720" cy="430" rx="290" ry="230" fill="url(#gCanopy)" filter="url(#f18)"/>
+<ellipse cx="720" cy="430" rx="200" ry="160" fill="#ffd080" opacity=".05" filter="url(#f10)"/>
+
+<!-- Trunk roots -->
+<path d="M700 790 Q678 798 650 808 Q632 815 610 812" stroke="#1e1008" stroke-width="10" fill="none" stroke-linecap="round"/>
+<path d="M740 790 Q762 798 790 808 Q808 815 830 812" stroke="#1e1008" stroke-width="10" fill="none" stroke-linecap="round"/>
+<path d="M718 790 Q715 808 712 828" stroke="#1e1008" stroke-width="7" fill="none" stroke-linecap="round"/>
+<path d="M722 790 Q725 808 728 828" stroke="#1e1008" stroke-width="7" fill="none" stroke-linecap="round"/>
+
+<!-- Trunk -->
+<path d="M702 790 Q696 740 692 690 Q688 645 693 600 Q698 562 710 535 Q718 515 720 505
+         Q722 515 730 535 Q742 562 747 600 Q752 645 748 690 Q744 740 738 790Z"
+      fill="#1e1008"/>
+<!-- Bark highlights -->
+<path d="M714 790 Q710 740 708 690 Q706 645 710 600 Q714 562 720 538"
+      stroke="#2e1c10" stroke-width="3" fill="none" opacity=".6" stroke-linecap="round"/>
+<path d="M726 790 Q728 740 730 690 Q732 645 730 600"
+      stroke="#2e1c10" stroke-width="2" fill="none" opacity=".4" stroke-linecap="round"/>
+
+<!-- Branch left -->
+<path d="M700 640 Q665 620 635 598 Q618 586 600 582" stroke="#1e1008" stroke-width="12" fill="none" stroke-linecap="round"/>
+<path d="M635 598 Q615 585 598 572" stroke="#1e1008" stroke-width="8" fill="none" stroke-linecap="round"/>
+<path d="M640 592 Q628 578 618 565" stroke="#1e1008" stroke-width="6" fill="none" stroke-linecap="round"/>
+
+<!-- Branch right -->
+<path d="M740 640 Q775 620 805 598 Q822 586 840 582" stroke="#1e1008" stroke-width="12" fill="none" stroke-linecap="round"/>
+<path d="M805 598 Q825 585 842 572" stroke="#1e1008" stroke-width="8" fill="none" stroke-linecap="round"/>
+<path d="M800 592 Q812 578 822 565" stroke="#1e1008" stroke-width="6" fill="none" stroke-linecap="round"/>
+
+<!-- Branch up-left -->
+<path d="M710 570 Q685 545 665 520 Q650 500 642 482" stroke="#1e1008" stroke-width="9" fill="none" stroke-linecap="round"/>
+
+<!-- Branch up-right -->
+<path d="M730 570 Q755 545 775 520 Q790 500 798 482" stroke="#1e1008" stroke-width="9" fill="none" stroke-linecap="round"/>
+
+<!-- ── Foliage clusters (layered depth) ── -->
+<!-- Outermost / darkest shadow clusters -->
+<ellipse cx="500" cy="518" rx="110" ry="85"  fill="#0e280e"/>
+<ellipse cx="940" cy="518" rx="110" ry="85"  fill="#0e280e"/>
+<ellipse cx="580" cy="470" rx="130" ry="98"  fill="#102810"/>
+<ellipse cx="860" cy="470" rx="130" ry="98"  fill="#102810"/>
+<ellipse cx="720" cy="490" rx="230" ry="175" fill="#122e12"/>
+
+<!-- Mid clusters -->
+<ellipse cx="528" cy="498" rx="105" ry="82"  fill="#163616"/>
+<ellipse cx="912" cy="498" rx="105" ry="82"  fill="#163616"/>
+<ellipse cx="610" cy="445" rx="135" ry="105" fill="#183818"/>
+<ellipse cx="830" cy="445" rx="135" ry="105" fill="#183818"/>
+<ellipse cx="665" cy="390" rx="115" ry="92"  fill="#1c401c"/>
+<ellipse cx="775" cy="390" rx="115" ry="92"  fill="#1c401c"/>
+<ellipse cx="720" cy="445" rx="215" ry="165" fill="#1a3c1a"/>
+
+<!-- Upper clusters -->
+<ellipse cx="672" cy="340" rx="110" ry="88"  fill="#204820"/>
+<ellipse cx="768" cy="340" rx="110" ry="88"  fill="#204820"/>
+<ellipse cx="720" cy="360" rx="185" ry="142" fill="#1e441e"/>
+<ellipse cx="720" cy="300" rx="155" ry="120" fill="#235023"/>
+
+<!-- Top clusters -->
+<ellipse cx="690" cy="258" rx="105" ry="85"  fill="#285828"/>
+<ellipse cx="750" cy="258" rx="105" ry="85"  fill="#285828"/>
+<ellipse cx="720" cy="240" rx="130" ry="100" fill="#2c5e2c"/>
+<ellipse cx="720" cy="210" rx="100" ry="80"  fill="#306030"/>
+<ellipse cx="700" cy="220" rx="80"  ry="65"  fill="#336633"/>
+<ellipse cx="740" cy="218" rx="80"  ry="65"  fill="#336633"/>
+<ellipse cx="720" cy="192" rx="70"  ry="55"  fill="#376837"/>
+
+<!-- ── Glowing spirits / orbs in canopy ── -->
+<!-- Each orb: blur glow ring + crisp center -->
+<circle cx="640" cy="390" r="22" fill="#ffe8a0" opacity=".18" filter="url(#f5)"/>
+<circle cx="640" cy="390" r="9"  fill="#fffacc" opacity=".92"/>
+<circle cx="640" cy="390" r="5"  fill="#ffffff" opacity=".8"/>
+
+<circle cx="800" cy="358" r="18" fill="#ffe8a0" opacity=".18" filter="url(#f5)"/>
+<circle cx="800" cy="358" r="7"  fill="#fffacc" opacity=".9"/>
+<circle cx="800" cy="358" r="4"  fill="#ffffff" opacity=".75"/>
+
+<circle cx="722" cy="308" r="28" fill="#ffe8a0" opacity=".22" filter="url(#f5)"/>
+<circle cx="722" cy="308" r="11" fill="#fff5bb" opacity=".95"/>
+<circle cx="722" cy="308" r="6"  fill="#ffffff" opacity=".85"/>
+
+<circle cx="605" cy="442" r="16" fill="#c8fff0" opacity=".18" filter="url(#f5)"/>
+<circle cx="605" cy="442" r="6"  fill="#e0fff8" opacity=".85"/>
+
+<circle cx="835" cy="428" r="16" fill="#c8fff0" opacity=".18" filter="url(#f5)"/>
+<circle cx="835" cy="428" r="6"  fill="#e0fff8" opacity=".85"/>
+
+<circle cx="698" cy="258" r="14" fill="#ffc8ff" opacity=".2" filter="url(#f5)"/>
+<circle cx="698" cy="258" r="5"  fill="#ffdaff" opacity=".88"/>
+
+<circle cx="744" cy="252" r="12" fill="#ffc8ff" opacity=".18" filter="url(#f5)"/>
+<circle cx="744" cy="252" r="5"  fill="#ffdaff" opacity=".85"/>
+
+<circle cx="760" cy="400" r="14" fill="#c8e8ff" opacity=".2" filter="url(#f5)"/>
+<circle cx="760" cy="400" r="5"  fill="#dff0ff" opacity=".85"/>
+
+<circle cx="680" cy="330" r="12" fill="#c8e8ff" opacity=".18" filter="url(#f5)"/>
+<circle cx="680" cy="330" r="4"  fill="#dff0ff" opacity=".82"/>
+
+<circle cx="660" cy="460" r="10" fill="#ffe8a0" opacity=".15" filter="url(#f2)"/>
+<circle cx="660" cy="460" r="4"  fill="#fffacc" opacity=".8"/>
+
+<circle cx="776" cy="468" r="10" fill="#ffe8a0" opacity=".15" filter="url(#f2)"/>
+<circle cx="776" cy="468" r="4"  fill="#fffacc" opacity=".8"/>
+
+<!-- ── Cherry blossoms on tree ── -->
+<circle cx="636" cy="384" r="6"  fill="#ffc0d8" opacity=".85"/>
+<circle cx="644" cy="376" r="5"  fill="#ffccde" opacity=".78"/>
+<circle cx="628" cy="378" r="4"  fill="#ff9abb" opacity=".8"/>
+<circle cx="638" cy="394" r="3.5" fill="#ffb0ce" opacity=".7"/>
+<circle cx="648" cy="390" r="3"  fill="#ffd0e4" opacity=".7"/>
+
+<circle cx="796" cy="352" r="6"  fill="#ffc0d8" opacity=".85"/>
+<circle cx="806" cy="344" r="5"  fill="#ffccde" opacity=".78"/>
+<circle cx="788" cy="348" r="4"  fill="#ff9abb" opacity=".8"/>
+<circle cx="800" cy="364" r="3.5" fill="#ffb0ce" opacity=".7"/>
+
+<circle cx="718" cy="302" r="7"  fill="#ffc0d8" opacity=".88"/>
+<circle cx="728" cy="294" r="5"  fill="#ffccde" opacity=".78"/>
+<circle cx="710" cy="298" r="5"  fill="#ff9abb" opacity=".8"/>
+<circle cx="726" cy="312" r="4"  fill="#ffb0ce" opacity=".72"/>
+
+<circle cx="694" cy="252" r="5"  fill="#ffc0d8" opacity=".8"/>
+<circle cx="748" cy="246" r="5"  fill="#ffc0d8" opacity=".8"/>
+<circle cx="602" cy="436" r="4"  fill="#ffc0d8" opacity=".72"/>
+<circle cx="832" cy="422" r="4"  fill="#ffc0d8" opacity=".72"/>
+<circle cx="758" cy="394" r="4"  fill="#ffd0e8" opacity=".7"/>
+<circle cx="678" cy="324" r="4"  fill="#ffd0e8" opacity=".7"/>
+<circle cx="658" cy="454" r="3.5" fill="#ffc8e0" opacity=".68"/>
+<circle cx="774" cy="462" r="3.5" fill="#ffc8e0" opacity=".68"/>
+
+<!-- ═══ FLOATING LANTERNS ═══ -->
+
+<!-- Lantern 1 — left mid -->
+<ellipse cx="480" cy="312" rx="26" ry="38" fill="#ffcc44" opacity=".25" filter="url(#f10)"/>
+<rect x="465" y="291" width="30" height="5" rx="2.5" fill="#b87820" opacity=".9"/>
+<ellipse cx="480" cy="316" rx="18" ry="25" fill="#ffee66" opacity=".9"/>
+<ellipse cx="480" cy="316" rx="14" ry="19" fill="#fff8aa" opacity=".75"/>
+<rect x="472" y="296" width="16" height="5" rx="2" fill="#c88c1a" opacity=".8"/>
+<line x1="480" y1="341" x2="480" y2="352" stroke="#c88c1a" stroke-width="1.5"/>
+<ellipse cx="480" cy="353" rx="8" ry="3" fill="#c88c1a" opacity=".6"/>
+<!-- tassel -->
+<line x1="478" y1="356" x2="476" y2="368" stroke="#c88c1a" stroke-width="1.5"/>
+<line x1="480" y1="356" x2="480" y2="370" stroke="#c88c1a" stroke-width="1.5"/>
+<line x1="482" y1="356" x2="484" y2="368" stroke="#c88c1a" stroke-width="1.5"/>
+
+<!-- Lantern 2 — right high -->
+<ellipse cx="968" cy="255" rx="22" ry="32" fill="#ffaa44" opacity=".22" filter="url(#f10)"/>
+<rect x="955" y="238" width="26" height="5" rx="2.5" fill="#a86c18" opacity=".9"/>
+<ellipse cx="968" cy="258" rx="16" ry="22" fill="#ffcc55" opacity=".88"/>
+<ellipse cx="968" cy="258" rx="11" ry="16" fill="#fff0aa" opacity=".7"/>
+<rect x="960" y="243" width="14" height="4" rx="2" fill="#b87820" opacity=".8"/>
+<line x1="968" y1="280" x2="968" y2="290" stroke="#b87820" stroke-width="1.5"/>
+<ellipse cx="968" cy="291" rx="7" ry="2.5" fill="#b87820" opacity=".55"/>
+
+<!-- Lantern 3 — far left -->
+<ellipse cx="345" cy="178" rx="16" ry="22" fill="#ffdd66" opacity=".18" filter="url(#f10)"/>
+<ellipse cx="345" cy="180" rx="11" ry="16" fill="#ffee88" opacity=".78"/>
+<ellipse cx="345" cy="180" rx="8"  ry="11" fill="#fffccc" opacity=".6"/>
+<rect x="339" y="168" width="12" height="4" rx="2" fill="#b87820" opacity=".7"/>
+
+<!-- Lantern 4 — far right -->
+<ellipse cx="1100" cy="200" rx="18" ry="26" fill="#ffbb44" opacity=".2" filter="url(#f10)"/>
+<ellipse cx="1100" cy="202" rx="13" ry="18" fill="#ffcc55" opacity=".82"/>
+<ellipse cx="1100" cy="202" rx="9"  ry="13" fill="#fff0aa" opacity=".65"/>
+<rect x="1093" y="190" width="14" height="4" rx="2" fill="#a86c18" opacity=".75"/>
+
+<!-- Lantern 5 — upper center -->
+<ellipse cx="720" cy="140" rx="14" ry="20" fill="#ffee88" opacity=".15" filter="url(#f5)"/>
+<ellipse cx="720" cy="142" rx="10" ry="14" fill="#ffee88" opacity=".72"/>
+<ellipse cx="720" cy="142" rx="7"  ry="10" fill="#fffccc" opacity=".58"/>
+
+<!-- ═══ SMALL SPIRIT CREATURES (original, Ghibli-inspired) ═══ -->
+
+<!-- Spirit 1 — left near hill -->
+<circle cx="430" cy="608" r="14" fill="#e4f6ef" opacity=".88"/>
+<circle cx="430" cy="608" r="20" fill="#b8ece0" opacity=".25" filter="url(#f2)"/>
+<!-- eyes -->
+<ellipse cx="426" cy="606" rx="2.5" ry="3" fill="#4a7a62"/>
+<ellipse cx="434" cy="606" rx="2.5" ry="3" fill="#4a7a62"/>
+<!-- smile -->
+<path d="M426 612 Q430 615 434 612" stroke="#4a7a62" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+<!-- rattle marks -->
+<path d="M420 600 L417 596" stroke="#b8ece0" stroke-width="1.5" opacity=".7"/>
+<path d="M440 600 L443 596" stroke="#b8ece0" stroke-width="1.5" opacity=".7"/>
+
+<!-- Spirit 2 — right near hill -->
+<circle cx="1012" cy="632" r="12" fill="#e8f2ff" opacity=".85"/>
+<circle cx="1012" cy="632" r="17" fill="#c8d8ff" opacity=".22" filter="url(#f2)"/>
+<ellipse cx="1008.5" cy="630" rx="2" ry="2.5" fill="#486a90"/>
+<ellipse cx="1015.5" cy="630" rx="2" ry="2.5" fill="#486a90"/>
+<path d="M1009 635 Q1012 637.5 1015 635" stroke="#486a90" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+
+<!-- Spirit 3 — tiny, upper left hill -->
+<circle cx="328" cy="680" r="9"  fill="#f0f4ef" opacity=".78"/>
+<circle cx="328" cy="680" r="13" fill="#c8e4c8" opacity=".2" filter="url(#f2)"/>
+<ellipse cx="325.5" cy="679" rx="1.5" ry="2" fill="#4a6a4a"/>
+<ellipse cx="330.5" cy="679" rx="1.5" ry="2" fill="#4a6a4a"/>
+
+<!-- ═══ THE COUPLE ═══ -->
+
+<!-- Shared shadow -->
+<ellipse cx="720" cy="802" rx="95" ry="18" fill="#000" opacity=".35" filter="url(#f2)"/>
+
+<!-- ── BOY (left) ── -->
+<!-- Legs / seated -->
+<path d="M662 800 Q656 812 650 824" stroke="#18120a" stroke-width="14" fill="none" stroke-linecap="round"/>
+<path d="M672 800 Q674 814 676 826" stroke="#18120a" stroke-width="12" fill="none" stroke-linecap="round"/>
+<path d="M650 824 Q648 828 652 830" stroke="#18120a" stroke-width="8"  fill="none" stroke-linecap="round"/>
+<path d="M676 826 Q678 830 682 830" stroke="#18120a" stroke-width="8"  fill="none" stroke-linecap="round"/>
+
+<!-- Body / torso -->
+<path d="M666 800 Q662 770 662 748 Q662 732 664 720"
+      stroke="#3a5a82" stroke-width="20" fill="none" stroke-linecap="round"/>
+<!-- Shirt detail line -->
+<path d="M666 800 Q662 770 662 748 Q662 732 664 720"
+      stroke="#4a6a92" stroke-width="10" fill="none" stroke-linecap="round" opacity=".5"/>
+
+<!-- Arm around girl -->
+<path d="M664 738 Q680 728 700 728 Q716 728 730 734 Q738 738 742 744"
+      stroke="#3a5a82" stroke-width="10" fill="none" stroke-linecap="round"/>
+<!-- Hand on her shoulder -->
+<circle cx="742" cy="746" r="7" fill="#c0845a"/>
+
+<!-- Head -->
+<circle cx="666" cy="707" r="22" fill="#c8906a"/>
+<!-- Ear -->
+<ellipse cx="645" cy="710" rx="5" ry="7" fill="#b87858"/>
+<ellipse cx="645" cy="710" rx="3" ry="5" fill="#c8906a"/>
+
+<!-- Hair -->
+<path d="M645 710 Q648 688 666 682 Q684 688 688 710"
+      fill="#140c06"/>
+<path d="M646 708 Q645 696 648 690" stroke="#1e140a" stroke-width="4" fill="none" stroke-linecap="round"/>
+<!-- hair tufts -->
+<path d="M656 682 Q660 676 666 674 Q672 676 676 682"
+      fill="#140c06"/>
+
+<!-- Face -->
+<circle cx="659" cy="707" r="3"  fill="#2a1808"/>
+<circle cx="673" cy="707" r="3"  fill="#2a1808"/>
+<!-- Eye shine -->
+<circle cx="660" cy="706" r="1"  fill="#fff" opacity=".7"/>
+<circle cx="674" cy="706" r="1"  fill="#fff" opacity=".7"/>
+<!-- Brows -->
+<path d="M656 701 Q659 699 662 701" stroke="#2a1808" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+<path d="M670 701 Q673 699 676 701" stroke="#2a1808" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+<!-- Smile -->
+<path d="M659 715 Q666 720 673 715" stroke="#2a1808" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+
+<!-- ── GIRL (right) ── -->
+<!-- Legs / seated -->
+<path d="M730 800 Q724 814 720 826" stroke="#18120a" stroke-width="12" fill="none" stroke-linecap="round"/>
+<path d="M738 800 Q742 814 746 826" stroke="#18120a" stroke-width="12" fill="none" stroke-linecap="round"/>
+<path d="M720 826 Q718 830 722 832" stroke="#18120a" stroke-width="8" fill="none" stroke-linecap="round"/>
+<path d="M746 826 Q748 830 750 832" stroke="#18120a" stroke-width="8" fill="none" stroke-linecap="round"/>
+
+<!-- Skirt / dress lower -->
+<path d="M720 800 Q720 800 734 800 Q748 800 750 800"
+      stroke="#c45a8a" stroke-width="26" fill="none" stroke-linecap="round"/>
+<!-- Dress body -->
+<path d="M734 800 Q730 770 728 748 Q727 732 728 720"
+      stroke="#d96a9a" stroke-width="18" fill="none" stroke-linecap="round"/>
+<!-- Dress highlight -->
+<path d="M734 800 Q730 770 728 748 Q727 732 728 720"
+      stroke="#ee88b2" stroke-width="8" fill="none" stroke-linecap="round" opacity=".4"/>
+<!-- Collar detail -->
+<path d="M722 730 Q728 726 734 730" stroke="#f0a0c0" stroke-width="2" fill="none"/>
+
+<!-- Long hair — left side -->
+<path d="M710 706 Q704 724 706 752 Q707 768 710 780"
+      stroke="#140c06" stroke-width="14" fill="none" stroke-linecap="round"/>
+<!-- Long hair — right side -->
+<path d="M752 706 Q758 724 756 752 Q755 768 752 780"
+      stroke="#140c06" stroke-width="14" fill="none" stroke-linecap="round"/>
+<!-- Head -->
+<circle cx="732" cy="704" r="22" fill="#c8906a"/>
+<!-- Ear -->
+<ellipse cx="753" cy="707" rx="5" ry="7" fill="#b87858"/>
+<ellipse cx="753" cy="707" rx="3" ry="5" fill="#c8906a"/>
+
+<!-- Hair top -->
+<path d="M711 706 Q714 684 732 678 Q750 684 753 706"
+      fill="#140c06"/>
+<path d="M717 680 Q720 672 726 670" stroke="#1e140a" stroke-width="4" fill="none" stroke-linecap="round"/>
+<path d="M732 678 Q732 670 732 666" stroke="#1e140a" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+<!-- Hair bow / pin -->
+<path d="M719 683 Q726 675 732 678 Q738 675 745 683"
+      stroke="#ff7aaa" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+<circle cx="732" cy="678" r="3" fill="#ff7aaa"/>
+
+<!-- Face -->
+<circle cx="726" cy="704" r="3"  fill="#2a1808"/>
+<circle cx="738" cy="704" r="3"  fill="#2a1808"/>
+<!-- Eye shine -->
+<circle cx="727" cy="703" r="1"  fill="#fff" opacity=".7"/>
+<circle cx="739" cy="703" r="1"  fill="#fff" opacity=".7"/>
+<!-- Lashes (simple) -->
+<path d="M724 700 L722 697" stroke="#2a1808" stroke-width="1" stroke-linecap="round"/>
+<path d="M726 699 L725 696" stroke="#2a1808" stroke-width="1" stroke-linecap="round"/>
+<path d="M736 699 L737 696" stroke="#2a1808" stroke-width="1" stroke-linecap="round"/>
+<path d="M738 700 L740 697" stroke="#2a1808" stroke-width="1" stroke-linecap="round"/>
+<!-- Brows -->
+<path d="M723 698 Q726 696 729 698" stroke="#2a1808" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+<path d="M735 698 Q738 696 741 698" stroke="#2a1808" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+<!-- Smile / blush -->
+<path d="M726 713 Q732 718 738 713" stroke="#c05888" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+<ellipse cx="722" cy="714" rx="6" ry="3.5" fill="#e06090" opacity=".25"/>
+<ellipse cx="742" cy="714" rx="6" ry="3.5" fill="#e06090" opacity=".25"/>
+
+<!-- ── Small floating hearts above couple ── -->
+<text x="700" y="680" font-size="14" fill="#ff8ab0" opacity=".6"
+      font-family="serif">♥</text>
+<text x="720" y="668" font-size="10" fill="#ffb0cc" opacity=".5"
+      font-family="serif">♥</text>
+<text x="740" y="676" font-size="12" fill="#ff8ab0" opacity=".55"
+      font-family="serif">♥</text>
+
+</g>
+</svg>
+
+<!-- Petals container -->
+<div id="petals"></div>
+<!-- Fireflies container -->
+<div id="flies"></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div id="content">
+  <div class="glass-card">
+    <span class="panda-icon">🐼</span>
+    <p class="question">Will you be the love of my life?</p>
+    <p class="tagline">✦ made just for you ✦</p>
+    <div class="btns">
+      <button id="yes-btn" onclick="handleYes()">Yes, always 💕</button>
+      <button id="no-btn" onmouseover="runAway()" onclick="runAway()">No…</button>
     </div>
+  </div>
+</div>
 
-    <audio id="bg-music" loop autoplay muted>
-        <source src="music/beabadoobee - Glue Song (Lyrics).mp3" type="audio/mpeg">
-    </audio>
+<div id="toast"></div>
 
-    <button id="music-toggle" onclick="toggleMusic()" title="Toggle music">🔊</button>
+<!-- Yes page -->
+<div id="yes-page">
+  <span class="yes-icon">🌸</span>
+  <p class="yes-headline">I knew you would… 💗</p>
+  <p class="yes-sub">You make every moment magical, just like this. 🐼✨</p>
+</div>
 
-    <script src="script.js"></script>
+<audio id="bgm" loop>
+  <source src="music/beabadoobee - Glue Song (Lyrics).mp3" type="audio/mpeg">
+</audio>
+
+<button id="music-btn" title="Toggle music" onclick="toggleMusic()">🎵</button>
+
+<script>
+/* ──────────────────── STARFIELD ──────────────────── */
+const cvs = document.getElementById('starfield');
+const ctx = cvs.getContext('2d');
+let stars = [];
+
+function resize() {
+  cvs.width  = window.innerWidth;
+  cvs.height = window.innerHeight;
+}
+
+function makeStars() {
+  stars = [];
+  for (let i = 0; i < 260; i++) {
+    stars.push({
+      x: Math.random() * cvs.width,
+      y: Math.random() * cvs.height * .72,
+      r: Math.random() * 1.6 + .3,
+      a: Math.random() * .85 + .15,
+      spd: Math.random() * .009 + .002,
+      ph: Math.random() * Math.PI * 2
+    });
+  }
+}
+
+function drawStars(t) {
+  ctx.clearRect(0, 0, cvs.width, cvs.height);
+  for (const s of stars) {
+    const a = s.a * (.65 + .35 * Math.sin(t * s.spd + s.ph));
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255,248,220,${a.toFixed(2)})`;
+    ctx.fill();
+  }
+  requestAnimationFrame(drawStars);
+}
+
+resize(); makeStars();
+window.addEventListener('resize', () => { resize(); makeStars(); });
+requestAnimationFrame(drawStars);
+
+/* ──────────────────── FIREFLIES ──────────────────── */
+(function spawnFireflies() {
+  const con = document.getElementById('flies');
+  const cols = ['#ffe08a','#c8ffc8','#ffc8ff','#c8e8ff','#ffe8c8'];
+  for (let i = 0; i < 30; i++) {
+    const f = document.createElement('div');
+    f.className = 'firefly';
+    const col = cols[i % cols.length];
+    f.style.cssText = `
+      left:${Math.random()*100}vw;
+      top:${28+Math.random()*58}vh;
+      background:${col};
+      box-shadow:0 0 7px 4px ${col}88;
+      --dx:${(Math.random()-.5)*140}px;
+      --dy:${(Math.random()-.5)*90}px;
+      animation-duration:${3+Math.random()*6}s;
+      animation-delay:${Math.random()*-10}s;
+    `;
+    con.appendChild(f);
+  }
+})();
+
+/* ──────────────────── PETALS ──────────────────── */
+(function spawnPetals() {
+  const con = document.getElementById('petals');
+  // Use SVG petal shapes so no emoji needed
+  const svgPetal = (col) => {
+    const s = encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+        <ellipse cx="10" cy="5" rx="4" ry="7" fill="${col}" transform="rotate(0 10 10)"/>
+        <ellipse cx="15" cy="10" rx="4" ry="7" fill="${col}" transform="rotate(72 10 10)"/>
+        <ellipse cx="13" cy="17" rx="4" ry="7" fill="${col}" transform="rotate(144 10 10)"/>
+        <ellipse cx="7"  cy="17" rx="4" ry="7" fill="${col}" transform="rotate(216 10 10)"/>
+        <ellipse cx="5"  cy="10" rx="4" ry="7" fill="${col}" transform="rotate(288 10 10)"/>
+      </svg>`
+    );
+    return `url("data:image/svg+xml,${s}")`;
+  };
+
+  const petalColors = ['#ffb8d0','#ffcce0','#ff99bb','#ffd6e8','#e8b0ff','#b0d8ff'];
+  for (let i = 0; i < 24; i++) {
+    const p = document.createElement('div');
+    p.className = 'petal';
+    const col = petalColors[i % petalColors.length];
+    const sz  = 10 + Math.random() * 16;
+    p.style.cssText = `
+      left:${Math.random()*105}vw;
+      width:${sz}px; height:${sz}px;
+      background-image:${svgPetal(col)};
+      background-size:contain; background-repeat:no-repeat;
+      animation-duration:${9+Math.random()*14}s;
+      animation-delay:${Math.random()*-22}s;
+    `;
+    con.appendChild(p);
+  }
+})();
+
+/* ──────────────────── NO BUTTON ──────────────────── */
+const noBtn = document.getElementById('no-btn');
+let noHits = 0;
+
+// Place no button initially roughly to the right of yes
+noBtn.style.left = 'auto';
+noBtn.style.top  = 'auto';
+noBtn.style.right  = '14vw';
+noBtn.style.bottom = '12vh';
+
+const taunts = [
+  'Nuh-uh! 🙈','Too slow~ 💨','Come onnnn 🥺',
+  'Try again! ✨','Almost… 🐼','Hehe 🌸',
+  'The correct answer is Yes 💕','Psst— click Yes! 🌺',
+  'You know you want to 💗','Okay but what if… Yes? 🥰'
+];
+
+function runAway() {
+  noHits++;
+  const margin = 70;
+  const maxX = window.innerWidth  - noBtn.offsetWidth  - margin;
+  const maxY = window.innerHeight - noBtn.offsetHeight - margin;
+  noBtn.style.right  = 'auto';
+  noBtn.style.bottom = 'auto';
+  noBtn.style.left = (margin + Math.random() * maxX) + 'px';
+  noBtn.style.top  = (margin + Math.random() * maxY) + 'px';
+  showToast(taunts[Math.min(noHits - 1, taunts.length - 1)]);
+  // Grow yes button
+  const s = Math.min(1 + noHits * 0.06, 1.55);
+  document.getElementById('yes-btn').style.transform = `scale(${s})`;
+}
+
+/* ──────────────────── TOAST ──────────────────── */
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.style.opacity = '0', 2200);
+}
+
+/* ──────────────────── YES HANDLER ──────────────────── */
+function handleYes() {
+  spawnSparks();
+  setTimeout(() => document.getElementById('yes-page').classList.add('show'), 900);
+}
+
+function spawnSparks() {
+  const colors = ['#ff80b0','#ffcc44','#c8aaff','#80ccff','#a0ffb8','#ffb0cc'];
+  for (let i = 0; i < 55; i++) {
+    setTimeout(() => {
+      const s = document.createElement('div');
+      s.className = 'spark';
+      const sz = 4 + Math.random() * 8;
+      const col = colors[Math.floor(Math.random() * colors.length)];
+      const angle = Math.random() * Math.PI * 2;
+      const dist  = 80 + Math.random() * 240;
+      s.style.cssText = `
+        width:${sz}px; height:${sz}px;
+        left:${30+Math.random()*40}vw;
+        top:${40+Math.random()*30}vh;
+        background:${col};
+        box-shadow:0 0 6px 3px ${col}88;
+        --sx:${Math.cos(angle)*dist}px;
+        --sy:${Math.sin(angle)*dist}px;
+        animation-duration:${1.2+Math.random()*.8}s;
+      `;
+      document.body.appendChild(s);
+      setTimeout(() => s.remove(), 2200);
+    }, i * 28);
+  }
+}
+
+/* ──────────────────── MUSIC ──────────────────── */
+let playing = false;
+const bgm    = document.getElementById('bgm');
+const musBtn = document.getElementById('music-btn');
+
+function toggleMusic() {
+  if (playing) {
+    bgm.pause();
+    musBtn.textContent = '🎵';
+    playing = false;
+  } else {
+    bgm.play().catch(() => {});
+    musBtn.textContent = '🔇';
+    playing = true;
+  }
+}
+
+// Auto-start on first interaction
+document.addEventListener('pointerdown', () => {
+  if (!playing) {
+    bgm.play().then(() => {
+      playing = true;
+      musBtn.textContent = '🔇';
+    }).catch(() => {});
+  }
+}, { once: true });
+</script>
 </body>
 </html>
