@@ -138,7 +138,7 @@ h1 {
 .popup-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.28);
+  background: rgba(0, 0, 0, 0.38);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -156,16 +156,16 @@ h1 {
 }
 
 .popup-box {
-  background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: rgba(20, 10, 30, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-radius: 24px;
-  padding: 44px 52px;
+  padding: 40px 48px;
   max-width: 500px;
   width: 90%;
   text-align: center;
-  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255,255,255,0.3);
-  border: 2px solid rgba(255, 180, 200, 0.45);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.15);
+  border: 1.5px solid rgba(255, 180, 200, 0.5);
   animation: popIn 0.42s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
@@ -180,27 +180,27 @@ h1 {
   color: #fff;
   line-height: 1.55;
   margin-bottom: 28px;
-  text-shadow: 0 2px 12px rgba(0,0,0,0.6);
+  text-shadow: 0 2px 14px rgba(0,0,0,0.7);
 }
 
 .popup-close-btn {
   padding: 13px 40px;
   font-size: 1.1rem;
   font-weight: 800;
-  border: 2px solid rgba(255,255,255,0.5);
+  border: 1.5px solid rgba(255,255,255,0.4);
   border-radius: 50px;
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.15);
   color: #fff;
   cursor: pointer;
   font-family: 'Nunito', sans-serif;
   transition: transform 0.2s ease, background 0.2s ease;
-  text-shadow: 0 1px 6px rgba(0,0,0,0.4);
-  backdrop-filter: blur(4px);
+  text-shadow: 0 1px 6px rgba(0,0,0,0.5);
+  backdrop-filter: blur(6px);
 }
 
 .popup-close-btn:hover {
   transform: scale(1.07);
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.25);
 }
 
 /* ── Only‑Yes banner ── */
