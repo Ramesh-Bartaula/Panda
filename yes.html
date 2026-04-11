@@ -28,7 +28,7 @@
       content: '';
       position: absolute;
       inset: 0;
-      background: rgba(0, 0, 0, 0.32);
+      background: rgba(0, 0, 0, 0.18);
       z-index: 1;
     }
 
@@ -58,15 +58,15 @@
       position: relative;
       z-index: 10;
       text-align: center;
-      background: rgba(255, 255, 255, 0.93);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
+      background: rgba(255, 255, 255, 0.10);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
       border-radius: 30px;
       padding: 52px 60px;
       max-width: 580px;
       width: 92%;
-      box-shadow: 0 28px 90px rgba(255, 50, 100, 0.4);
-      border: 3px solid rgba(255, 150, 180, 0.5);
+      box-shadow: 0 28px 90px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255,255,255,0.25);
+      border: 2px solid rgba(255, 200, 220, 0.4);
       animation: appear 0.9s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
     }
 
@@ -92,10 +92,10 @@
     .yes-title {
       font-family: 'Dancing Script', cursive;
       font-size: 3.2rem;
-      color: #d63384;
+      color: #fff;
       margin-bottom: 12px;
       line-height: 1.2;
-      text-shadow: 0 2px 10px rgba(214, 51, 132, 0.2);
+      text-shadow: 0 2px 20px rgba(214, 51, 132, 0.9), 0 0 40px rgba(255,100,150,0.6);
     }
 
     /* ── GIF circle ── */
@@ -119,17 +119,19 @@
     .yes-message {
       font-size: 1.3rem;
       font-weight: 700;
-      color: #444;
+      color: rgba(255, 255, 255, 0.93);
       line-height: 1.75;
       margin-bottom: 26px;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.55);
     }
 
     .yes-message .love-line {
       font-size: 1.65rem;
-      color: #d63384;
+      color: #ffb3c6;
       font-weight: 900;
       display: block;
       margin-bottom: 6px;
+      text-shadow: 0 2px 16px rgba(0,0,0,0.5);
     }
 
     /* ── Pulsing hearts row ── */
