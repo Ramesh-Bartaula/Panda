@@ -259,10 +259,6 @@
 -->
 
 
-
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -280,79 +276,133 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      /* Darker gradient overlay so the white text/card pops */
-      background: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), #b5003d; 
+      /* Default fallback color */
+      background: #220000; 
       background-size: cover;
       background-position: center;
+      background-repeat: no-repeat;
       position: relative;
       overflow: hidden;
     }
 
-    /* --- COMPACT CARD --- */
+    .hearts-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      overflow: hidden;
+    }
+    .heart-particle {
+      position: absolute;
+      animation: floatUp linear infinite;
+      opacity: 0;
+      user-select: none;
+    }
+    @keyframes floatUp {
+      0%   { transform: translateY(100vh) rotate(0deg);   opacity: 0.9; }
+      100% { transform: translateY(-120px) rotate(360deg); opacity: 0;  }
+    }
+
+    /* 1 & 3: CHANGED SIZE AND TRANSPARENCY (More compact and clearer glass) */
     .yes-container {
       position: relative;
       z-index: 10;
       text-align: center;
-      background: rgba(255, 255, 255, 0.15); /* Glassmorphism */
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.12); /* Much more transparent */
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border-radius: 20px;
-      padding: 20px; /* Tight padding */
-      max-width: 380px; /* Narrower card */
+      padding: 20px 30px; /* Reduced padding for smaller height */
+      max-width: 360px; /* Reduced width */
       width: 85%;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.3);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      animation: appear 0.8s ease-out;
+      box-shadow: 0 15px 45px rgba(0,0,0,0.3);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      animation: appear 0.85s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+    }
+
+    @keyframes appear {
+      from { transform: scale(0.5) translateY(40px); opacity: 0; }
+      to   { transform: scale(1)   translateY(0);    opacity: 1; }
     }
 
     .yes-rose {
-      font-size: 2.2rem; /* Smaller rose */
-      margin-bottom: 5px;
+      font-size: 2.2rem; /* Reduced size */
       display: block;
+      margin-bottom: 2px;
+      animation: bounce 1.1s ease-in-out infinite alternate;
+    }
+    @keyframes bounce {
+      from { transform: translateY(0)     rotate(-6deg); }
+      to   { transform: translateY(-10px)  rotate(6deg); }
     }
 
     .yes-title {
       font-family: 'Dancing Script', cursive;
-      font-size: 2rem; /* Reduced size */
+      font-size: 1.8rem; /* Reduced size */
       color: #fff;
-      margin-bottom: 10px;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      margin-bottom: 5px;
+      line-height: 1.2;
+      text-shadow: 0 2px 15px rgba(255, 80, 130, 0.85);
     }
 
     .gif-yes {
-      width: 90px; /* Smaller GIF */
-      height: 90px;
+      width: 85px; /* Reduced size */
+      height: 85px;
       border-radius: 50%;
-      margin: 0 auto 10px;
-      border: 2px solid #fff;
+      margin: 5px auto 10px;
+      border: 2px solid rgba(255, 255, 255, 0.6);
       overflow: hidden;
+    }
+    .gif-yes img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
     .yes-message {
-      font-size: 0.95rem;
+      font-size: 0.9rem; /* Reduced size */
+      font-weight: 700;
       color: #fff;
       line-height: 1.4;
       margin-bottom: 10px;
+      text-shadow: 0 1px 8px rgba(0,0,0,0.5);
     }
-
     .love-line {
-      font-size: 1.2rem;
-      font-weight: 900;
+      font-size: 1.2rem; /* Reduced size */
       color: #ffb3c6;
+      font-weight: 900;
       display: block;
+      margin-bottom: 3px;
     }
 
     .yes-hearts {
-      font-size: 1.2rem;
+      font-size: 1.4rem; /* Reduced size */
+      letter-spacing: 5px;
       display: block;
+      animation: pulse 1.3s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1);    }
+      50%       { transform: scale(1.1); }
     }
 
-    /* Floating hearts bg */
-    .hearts-bg { position: fixed; inset: 0; pointer-events: none; z-index: 2; }
-    .heart-particle { position: absolute; animation: floatUp linear infinite; opacity: 0; }
-    @keyframes floatUp {
-      0% { transform: translateY(100vh); opacity: 0.8; }
-      100% { transform: translateY(-10vh); opacity: 0; }
+    #music-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 50;
+      font-size: 1.1rem;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      color: white;
+    }
+
+    @media (max-width: 480px) {
+      .yes-container { padding: 15px 20px; }
     }
   </style>
 </head>
@@ -362,15 +412,15 @@
 
   <div class="yes-container">
     <span class="yes-rose">🌹</span>
-    <h1 class="yes-title">I knew you'd say Yes!</h1>
+    <h1 class="yes-title">I knew you'd say Yes 🎉</h1>
 
     <div class="gif-yes">
-      <img src="https://media.tenor.com/tQ9E4IU8GtoAAAAj/cute-love.gif" style="width:100%; height:100%; object-fit:cover;">
+      <img src="https://media.tenor.com/tQ9E4IU8GtoAAAAj/cute-love.gif" alt="love">
     </div>
 
     <p class="yes-message">
       <span class="love-line">I love you ❤️</span>
-      You've made me the happiest person alive.<br>
+      You just made me the happiest alive.<br>
       I'll be your person, every single day. 🌸
     </p>
 
@@ -380,35 +430,69 @@
   <audio id="bg-music" loop>
     <source src="music/beabadoobee - Glue Song (Lyrics).mp3" type="audio/mpeg">
   </audio>
+  <button id="music-toggle" onclick="toggleMusic()">🔊</button>
 
   <script>
-    // --- Specific Proposing Background Logic ---
-    (function setBg() {
-      const proposalImages = [
-        'https://images.alphacoders.com/839/839420.png', // Anime proposal scene
-        'https://wallpapers.com/images/hd/man-crowning-woman-love-anime-tuiq82k2xmucatv9.jpg',
-        'https://wallpapercave.com/wp/wp6613430.jpg'
+    /* 2: CHANGED BACKGROUND IMAGE (Direct proposal scene) */
+    (function loadBg() {
+      // High-quality anime proposal images
+      const candidates = [
+        'https://w.wallhaven.cc/full/8o/wallhaven-8o9m3y.jpg',
+        'https://images8.alphacoders.com/839/839420.png'
       ];
-      
-      let img = new Image();
-      img.src = proposalImages[0];
-      img.onload = () => {
-        document.body.style.backgroundImage = `url('${proposalImages[0]}')`;
-      };
+
+      let i = 0;
+      function tryNext() {
+        if (i >= candidates.length) return;
+        const img = new Image();
+        img.onload = () => {
+          document.body.style.backgroundImage = `url('${candidates[i]}')`;
+        };
+        img.onerror = () => { i++; tryNext(); };
+        img.src = candidates[i];
+      }
+      tryNext();
     })();
 
-    // Floating hearts
-    setInterval(() => {
+    /* Remaining logic preserved from original */
+    window.addEventListener('load', () => {
+      const music = document.getElementById('bg-music');
+      music.volume = 0.7;
+      music.play().catch(() => {
+        const unlock = () => { music.play(); };
+        document.addEventListener('click', unlock, { once: true });
+      });
+    });
+
+    function toggleMusic() {
+      const m = document.getElementById('bg-music');
+      const b = document.getElementById('music-toggle');
+      if (m.paused) { m.play(); b.textContent = '🔊'; }
+      else { m.pause(); b.textContent = '🔇'; }
+    }
+
+    (function spawnHearts() {
       const container = document.getElementById('hearts-bg');
-      const el = document.createElement('span');
-      el.className = 'heart-particle';
-      el.textContent = '❤️';
-      el.style.left = Math.random() * 100 + 'vw';
-      el.style.fontSize = (10 + Math.random() * 20) + 'px';
-      el.style.animationDuration = (3 + Math.random() * 3) + 's';
-      container.appendChild(el);
-      setTimeout(() => el.remove(), 5000);
-    }, 400);
+      const emojis = ['❤️','💕','💖','💗','💓','🌹','🌸','✨','💝'];
+      setInterval(() => {
+        const el = document.createElement('span');
+        el.className = 'heart-particle';
+        el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        el.style.left = Math.random() * 100 + 'vw';
+        el.style.fontSize = (12 + Math.random() * 15) + 'px';
+        const dur = 4 + Math.random() * 4;
+        el.style.animationDuration = dur + 's';
+        container.appendChild(el);
+        setTimeout(() => el.remove(), dur * 1000);
+      }, 400);
+    })();
   </script>
+
 </body>
 </html>
+
+
+
+
+    
+   
