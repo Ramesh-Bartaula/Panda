@@ -1,3 +1,4 @@
+<!--
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -249,5 +250,165 @@
     })();
   </script>
 
+</body>
+</html>
+//
+
+
+
+-->
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>She said YES! 💕</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      /* Darker gradient overlay so the white text/card pops */
+      background: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), #b5003d; 
+      background-size: cover;
+      background-position: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* --- COMPACT CARD --- */
+    .yes-container {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.15); /* Glassmorphism */
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 20px; /* Tight padding */
+      max-width: 380px; /* Narrower card */
+      width: 85%;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      animation: appear 0.8s ease-out;
+    }
+
+    .yes-rose {
+      font-size: 2.2rem; /* Smaller rose */
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    .yes-title {
+      font-family: 'Dancing Script', cursive;
+      font-size: 2rem; /* Reduced size */
+      color: #fff;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+
+    .gif-yes {
+      width: 90px; /* Smaller GIF */
+      height: 90px;
+      border-radius: 50%;
+      margin: 0 auto 10px;
+      border: 2px solid #fff;
+      overflow: hidden;
+    }
+
+    .yes-message {
+      font-size: 0.95rem;
+      color: #fff;
+      line-height: 1.4;
+      margin-bottom: 10px;
+    }
+
+    .love-line {
+      font-size: 1.2rem;
+      font-weight: 900;
+      color: #ffb3c6;
+      display: block;
+    }
+
+    .yes-hearts {
+      font-size: 1.2rem;
+      display: block;
+    }
+
+    /* Floating hearts bg */
+    .hearts-bg { position: fixed; inset: 0; pointer-events: none; z-index: 2; }
+    .heart-particle { position: absolute; animation: floatUp linear infinite; opacity: 0; }
+    @keyframes floatUp {
+      0% { transform: translateY(100vh); opacity: 0.8; }
+      100% { transform: translateY(-10vh); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="hearts-bg" id="hearts-bg"></div>
+
+  <div class="yes-container">
+    <span class="yes-rose">🌹</span>
+    <h1 class="yes-title">I knew you'd say Yes!</h1>
+
+    <div class="gif-yes">
+      <img src="https://media.tenor.com/tQ9E4IU8GtoAAAAj/cute-love.gif" style="width:100%; height:100%; object-fit:cover;">
+    </div>
+
+    <p class="yes-message">
+      <span class="love-line">I love you ❤️</span>
+      You've made me the happiest person alive.<br>
+      I'll be your person, every single day. 🌸
+    </p>
+
+    <span class="yes-hearts">❤️ 💕 🌹 💕 ❤️</span>
+  </div>
+
+  <audio id="bg-music" loop>
+    <source src="music/beabadoobee - Glue Song (Lyrics).mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    // --- Specific Proposing Background Logic ---
+    (function setBg() {
+      const proposalImages = [
+        'https://images.alphacoders.com/839/839420.png', // Anime proposal scene
+        'https://wallpapers.com/images/hd/man-crowning-woman-love-anime-tuiq82k2xmucatv9.jpg',
+        'https://wallpapercave.com/wp/wp6613430.jpg'
+      ];
+      
+      let img = new Image();
+      img.src = proposalImages[0];
+      img.onload = () => {
+        document.body.style.backgroundImage = `url('${proposalImages[0]}')`;
+      };
+    })();
+
+    // Floating hearts
+    setInterval(() => {
+      const container = document.getElementById('hearts-bg');
+      const el = document.createElement('span');
+      el.className = 'heart-particle';
+      el.textContent = '❤️';
+      el.style.left = Math.random() * 100 + 'vw';
+      el.style.fontSize = (10 + Math.random() * 20) + 'px';
+      el.style.animationDuration = (3 + Math.random() * 3) + 's';
+      container.appendChild(el);
+      setTimeout(() => el.remove(), 5000);
+    }, 400);
+  </script>
 </body>
 </html>
