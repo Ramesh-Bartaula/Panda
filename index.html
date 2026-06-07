@@ -179,7 +179,23 @@
        MAIN CONTENT (hidden until unlocked)
        ══════════════════════════════════════════ -->
   <div id="main-content" style="display:none;">
-    <div class="hearts-bg"></div>
+
+    <!-- Floating hearts — needs id="hearts-bg" so script.js can find it -->
+    <div id="hearts-bg" class="hearts-bg"></div>
+
+    <!-- ══ POPUP OVERLAY (was missing entirely) ══ -->
+    <div id="popup-overlay" class="popup-overlay hidden">
+      <div class="popup-box">
+        <div id="popup-message"></div>
+        <button class="popup-close-btn" onclick="closePopup()">Okay fine... 🥺</button>
+      </div>
+    </div>
+
+    <!-- ══ ONLY-YES BANNER (was missing entirely) ══ -->
+    <div id="only-yes-banner" class="only-yes-banner hidden">
+      💕 There's only one answer now...
+    </div>
+
     <div class="container">
       <h1>Will you be love of my life ? ❤️ </h1>
       <div class="gif-container">
@@ -189,7 +205,8 @@
         <button id="yes-btn" onclick="handleYesClick()">Yes 💕</button>
         <button id="no-btn" onclick="handleNoClick()">No</button>
       </div>
-      <div id="tease-toast"></div>
+      <!-- hint-text was missing — script.js updates this after 15 No clicks -->
+      <p id="hint-text" class="hint-text"></p>
     </div>
 
     <audio id="bg-music" loop autoplay muted>
