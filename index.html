@@ -3,268 +3,437 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Will you be love of my life ? ❤️ </title>
+  <title>For You 🌹</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
-    /* ── Password Gate Overlay ── */
-    #gate-overlay {
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --rose:      #e8436a;
+      --rose-soft: #f9a8be;
+      --blush:     #ffe4ec;
+      --ink:       #0d0811;
+      --ink-mid:   #1c1220;
+      --ink-light: #2e1f2e;
+      --petal:     #ffdde8;
+      --gold:      #e8c87d;
+      --text-main: #f7e9ef;
+      --text-sub:  #c9a8b8;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--ink);
+      color: var(--text-main);
+      overflow: hidden;
+    }
+
+    /* ── Canvas background ── */
+    #canvas-bg {
       position: fixed;
       inset: 0;
-      z-index: 9999;
-      background: linear-gradient(135deg, #ffe4f0 0%, #ffd6e8 50%, #ffcce4 100%);
+      z-index: 0;
+    }
+
+    /* ── Vignette ── */
+    .vignette {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.72) 100%);
+      pointer-events: none;
+    }
+
+    /* ── Wrapper ── */
+    .scene {
+      position: relative;
+      z-index: 10;
+      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-family: 'Nunito', sans-serif;
+      padding: 24px;
     }
 
-    #gate-box {
-      background: white;
-      border-radius: 24px;
-      padding: 40px 36px;
-      max-width: 380px;
-      width: 90%;
+    /* ── LOCK SCREEN ── */
+    .lock-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+      animation: fadeUp 0.9s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .lock-icon {
+      font-size: 3rem;
+      animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-10px); }
+    }
+
+    .lock-heading {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.9rem, 5vw, 2.8rem);
+      font-style: italic;
+      color: var(--text-main);
       text-align: center;
-      box-shadow: 0 8px 40px rgba(255, 100, 150, 0.25);
-      animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      line-height: 1.25;
+      letter-spacing: 0.01em;
     }
 
-    @keyframes popIn {
-      from { transform: scale(0.7); opacity: 0; }
-      to   { transform: scale(1);   opacity: 1; }
-    }
-
-    #gate-box .gate-emoji {
-      font-size: 52px;
-      margin-bottom: 8px;
-    }
-
-    #gate-box h2 {
-      color: #d63384;
-      font-size: 1.4rem;
-      font-weight: 800;
-      margin: 0 0 8px;
-    }
-
-    #gate-box p.gate-sub {
-      color: #888;
+    .lock-sub {
       font-size: 0.92rem;
-      margin: 0 0 22px;
-    }
-
-    #gate-input {
-      width: 100%;
-      padding: 12px 16px;
-      border: 2px solid #ffb3cc;
-      border-radius: 12px;
-      font-size: 1.1rem;
-      font-family: 'Nunito', sans-serif;
+      color: var(--text-sub);
       text-align: center;
-      outline: none;
-      box-sizing: border-box;
-      transition: border-color 0.2s;
-      letter-spacing: 2px;
+      line-height: 1.7;
+      max-width: 300px;
     }
 
-    #gate-input:focus { border-color: #d63384; }
-
-    #gate-input.shake {
-      animation: shake 0.4s ease;
-      border-color: #e74c3c;
-    }
-
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      20%       { transform: translateX(-8px); }
-      40%       { transform: translateX(8px); }
-      60%       { transform: translateX(-6px); }
-      80%       { transform: translateX(6px); }
-    }
-
-    #gate-btn {
-      margin-top: 16px;
+    .input-wrap {
+      position: relative;
       width: 100%;
-      padding: 12px;
-      background: linear-gradient(135deg, #ff6b9d, #d63384);
-      color: white;
+      max-width: 320px;
+    }
+
+    .password-input {
+      width: 100%;
+      background: rgba(255,255,255,0.06);
+      border: 1.5px solid rgba(232, 67, 106, 0.35);
+      border-radius: 12px;
+      padding: 14px 50px 14px 18px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      color: var(--text-main);
+      outline: none;
+      transition: border-color 0.25s, box-shadow 0.25s;
+      letter-spacing: 0.08em;
+    }
+    .password-input::placeholder { color: rgba(201,168,184,0.5); letter-spacing: 0.02em; }
+    .password-input:focus {
+      border-color: var(--rose);
+      box-shadow: 0 0 0 3px rgba(232,67,106,0.18);
+    }
+    .password-input.shake {
+      animation: shake 0.45s ease;
+      border-color: #ff3f6c;
+    }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20%      { transform: translateX(-8px); }
+      40%      { transform: translateX(8px); }
+      60%      { transform: translateX(-6px); }
+      80%      { transform: translateX(6px); }
+    }
+
+    .toggle-eye {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.1rem;
+      color: var(--text-sub);
+      line-height: 1;
+    }
+
+    .submit-btn {
+      width: 100%;
+      max-width: 320px;
+      padding: 14px;
+      background: linear-gradient(135deg, #c42d54 0%, var(--rose) 60%, #f06882 100%);
       border: none;
       border-radius: 12px;
+      color: #fff;
+      font-family: 'DM Sans', sans-serif;
       font-size: 1rem;
-      font-family: 'Nunito', sans-serif;
-      font-weight: 800;
+      font-weight: 500;
+      letter-spacing: 0.04em;
       cursor: pointer;
-      transition: opacity 0.2s, transform 0.1s;
+      transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+      box-shadow: 0 6px 24px rgba(232,67,106,0.35);
+    }
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 32px rgba(232,67,106,0.5);
+    }
+    .submit-btn:active { transform: translateY(0); opacity: 0.85; }
+
+    .attempts-bar {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+    }
+    .dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--rose);
+      transition: background 0.3s, transform 0.3s;
+    }
+    .dot.lost {
+      background: rgba(255,255,255,0.15);
+      transform: scale(0.75);
     }
 
-    #gate-btn:hover  { opacity: 0.9; }
-    #gate-btn:active { transform: scale(0.97); }
-
-    #gate-msg {
-      margin-top: 14px;
-      font-size: 0.9rem;
-      font-weight: 700;
-      min-height: 20px;
-      color: #e74c3c;
+    .hint-text {
+      font-size: 0.8rem;
+      color: var(--text-sub);
+      text-align: center;
+      opacity: 0.65;
+      font-style: italic;
     }
 
-    #gate-msg.success { color: #27ae60; }
-
-    #gate-chances {
-      margin-top: 10px;
-      font-size: 0.82rem;
-      color: #bbb;
-    }
-
-    /* Locked screen */
-    #locked-screen {
+    /* ── DENIED SCREEN ── */
+    .denied-screen {
       display: none;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      position: fixed;
-      inset: 0;
-      z-index: 9999;
-      background: linear-gradient(135deg, #ffe4f0, #ffd6e8);
-      font-family: 'Nunito', sans-serif;
+      gap: 22px;
       text-align: center;
-      padding: 20px;
+      animation: fadeUp 0.7s ease both;
+    }
+    .denied-screen .big-emoji { font-size: 4rem; }
+    .denied-screen h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      font-style: italic;
+      color: var(--rose-soft);
+    }
+    .denied-screen p { color: var(--text-sub); font-size: 0.95rem; line-height: 1.7; max-width: 280px; }
+    .denied-screen .try-again-btn {
+      padding: 12px 32px;
+      background: transparent;
+      border: 1.5px solid var(--rose);
+      border-radius: 10px;
+      color: var(--rose-soft);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .denied-screen .try-again-btn:hover {
+      background: rgba(232,67,106,0.12);
     }
 
-    #locked-screen .lock-emoji { font-size: 72px; margin-bottom: 16px; }
-    #locked-screen h2 { color: #c0392b; font-size: 1.6rem; font-weight: 900; margin: 0 0 10px; }
-    #locked-screen p  { color: #888; font-size: 1rem; }
+    /* ── Floating petals ── */
+    .petal-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 3;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .petal {
+      position: absolute;
+      top: -60px;
+      font-size: 1.1rem;
+      opacity: 0.55;
+      animation: petalFall linear infinite;
+      user-select: none;
+    }
+    @keyframes petalFall {
+      0%   { transform: translateY(0) rotate(0deg) translateX(0); opacity: 0.6; }
+      50%  { transform: translateY(50vh) rotate(180deg) translateX(30px); }
+      100% { transform: translateY(110vh) rotate(360deg) translateX(-20px); opacity: 0; }
+    }
   </style>
 </head>
 <body>
 
-  <!-- ══════════════════════════════════════════
-       PASSWORD GATE — shown until correct answer
-       ══════════════════════════════════════════ -->
-  <div id="gate-overlay">
-    <div id="gate-box">
-      <div class="gate-emoji">💌</div>
-      <h2>Hey, do I know you? 🥺</h2>
-      <p class="gate-sub">What was the name you gave me?<br>or… the first doll I gave you when we met later. 🧸</p>
+<canvas id="canvas-bg"></canvas>
+<div class="vignette"></div>
+<div class="petal-layer" id="petal-layer"></div>
 
+<div class="scene">
+
+  <!-- Lock screen -->
+  <div class="lock-screen" id="lock-screen">
+    <div class="lock-icon">💌</div>
+    <h1 class="lock-heading">Hey, do I know you?&nbsp;🥺</h1>
+    <p class="lock-sub">
+      What was the name you gave me...<br>
+      or the first doll I gave you when we met later? 🧸
+    </p>
+
+    <div class="input-wrap">
       <input
-        id="gate-input"
-        type="text"
-        placeholder="Enter the name..."
+        id="pwd-input"
+        class="password-input"
+        type="password"
+        placeholder="whisper it here…"
         autocomplete="off"
-        autocorrect="off"
         spellcheck="false"
-        onkeydown="if(event.key==='Enter') checkAnswer()"
+        maxlength="60"
       />
-
-      <button id="gate-btn" onclick="checkAnswer()">💕 Enter</button>
-
-      <div id="gate-msg"></div>
-      <div id="gate-chances">3 chances remaining</div>
+      <button class="toggle-eye" id="eye-btn" onclick="toggleEye()" title="Show/hide">👁</button>
     </div>
+
+    <button class="submit-btn" onclick="checkPassword()">💕 Enter</button>
+
+    <div class="attempts-bar" id="dots">
+      <div class="dot" id="d1"></div>
+      <div class="dot" id="d2"></div>
+      <div class="dot" id="d3"></div>
+    </div>
+    <p class="hint-text" id="hint-text">3 chances remaining</p>
   </div>
 
-  <!-- ══════════════════════════════════════════
-       LOCKED SCREEN — shown after 3 wrong tries
-       ══════════════════════════════════════════ -->
-  <div id="locked-screen">
-    <div class="lock-emoji">🔒</div>
-    <h2>Access Denied 💔</h2>
-    <p>You didn't know the name...<br>This page isn't for you. 🥺</p>
+  <!-- Denied screen -->
+  <div class="denied-screen" id="denied-screen">
+    <div class="big-emoji">💔</div>
+    <h2>Access Denied</h2>
+    <p>You didn't know the name...<br>This page was made for someone very special. That's not you. 🥺</p>
+    <button class="try-again-btn" onclick="resetLock()">Okay fine... 🥺</button>
   </div>
 
-  <!-- ══════════════════════════════════════════
-       MAIN CONTENT (hidden until unlocked)
-       ══════════════════════════════════════════ -->
-  <div id="main-content" style="display:none;">
+</div>
 
-    <!-- Floating hearts — needs id="hearts-bg" so script.js can find it -->
-    <div id="hearts-bg" class="hearts-bg"></div>
+<script>
+  /* ──────────────────────────────────────────
+     CANVAS: animated aurora / rose nebula bg
+  ────────────────────────────────────────── */
+  const canvas = document.getElementById('canvas-bg');
+  const ctx    = canvas.getContext('2d');
+  let W, H, t = 0;
 
-    <!-- ══ POPUP OVERLAY (was missing entirely) ══ -->
-    <div id="popup-overlay" class="popup-overlay hidden">
-      <div class="popup-box">
-        <div id="popup-message"></div>
-        <button class="popup-close-btn" onclick="closePopup()">Okay fine... 🥺</button>
-      </div>
-    </div>
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
 
-    <!-- ══ ONLY-YES BANNER (was missing entirely) ══ -->
-    <div id="only-yes-banner" class="only-yes-banner hidden">
-      💕 There's only one answer now...
-    </div>
+  function drawBg() {
+    ctx.fillStyle = '#0d0811';
+    ctx.fillRect(0, 0, W, H);
 
-    <div class="container">
-      <h1>Will you be love of my life ? ❤️ </h1>
-      <div class="gif-container">
-        <img id="cat-gif" src="https://media.tenor.com/EBV7OT7ACfwAAAAj/u-u-qua-qua-u-quaa.gif" alt="cute character">
-      </div>
-      <div class="buttons">
-        <button id="yes-btn" onclick="handleYesClick()">Yes 💕</button>
-        <button id="no-btn" onclick="handleNoClick()">No</button>
-      </div>
-      <!-- hint-text was missing — script.js updates this after 15 No clicks -->
-      <p id="hint-text" class="hint-text"></p>
-    </div>
+    const orbs = [
+      { x: W*0.2, y: H*0.3, r: W*0.45, c1: 'rgba(140,20,60,0.35)', c2: 'transparent', ox: 0.18, oy: 0.12 },
+      { x: W*0.8, y: H*0.7, r: W*0.4,  c1: 'rgba(90,0,80,0.3)',   c2: 'transparent', ox:-0.14, oy:-0.1 },
+      { x: W*0.5, y: H*0.5, r: W*0.35, c1: 'rgba(200,50,90,0.18)', c2: 'transparent', ox: 0.1,  oy: 0.18 },
+    ];
 
-    <audio id="bg-music" loop autoplay muted>
-      <source src="music/beabadoobee - Glue Song (Lyrics).mp3" type="audio/mpeg">
-    </audio>
-    <button id="music-toggle" onclick="toggleMusic()" title="Toggle music">🔊</button>
-  </div>
+    orbs.forEach(o => {
+      const x = o.x + Math.sin(t * o.ox) * W * 0.07;
+      const y = o.y + Math.cos(t * o.oy) * H * 0.07;
+      const g = ctx.createRadialGradient(x, y, 0, x, y, o.r);
+      g.addColorStop(0, o.c1);
+      g.addColorStop(1, o.c2);
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+    });
 
-  <!-- Gate script — must run before anything else -->
-  <script>
-    const CORRECT = "koala";
-    let chancesLeft = 3;
-
-    function checkAnswer() {
-      const input = document.getElementById("gate-input");
-      const msg   = document.getElementById("gate-msg");
-      const info  = document.getElementById("gate-chances");
-      const val   = input.value.trim().toLowerCase();
-
-      if (!val) return;
-
-      if (val === CORRECT) {
-        msg.textContent = "✅ Welcome! 🥰";
-        msg.className   = "success";
-        input.disabled  = true;
-        document.getElementById("gate-btn").disabled = true;
-
-        setTimeout(() => {
-          document.getElementById("gate-overlay").style.display = "none";
-          document.getElementById("main-content").style.display = "block";
-
-          // Auto-play music after unlock (needs user gesture — already happened via button click)
-          const music = document.getElementById("bg-music");
-          if (music) { music.muted = false; music.play().catch(() => {}); }
-        }, 800);
-
-      } else {
-        chancesLeft--;
-        input.value = "";
-        input.classList.remove("shake");
-        // Force reflow to re-trigger animation
-        void input.offsetWidth;
-        input.classList.add("shake");
-
-        if (chancesLeft <= 0) {
-          // Lock them out
-          document.getElementById("gate-overlay").style.display = "none";
-          document.getElementById("locked-screen").style.display = "flex";
-        } else {
-          msg.textContent = chancesLeft === 1
-            ? "❌ Wrong... last chance! 💔"
-            : `❌ That's not it... try again 😔`;
-          info.textContent = chancesLeft + " chance" + (chancesLeft === 1 ? "" : "s") + " remaining";
-        }
+    // Subtle star field
+    if (t % 1 < 0.016) {
+      const stars = [];
+      for (let i = 0; i < 80; i++) {
+        stars.push({ x: Math.random()*W, y: Math.random()*H, r: Math.random()*1.2 });
       }
+      canvas._stars = stars;
     }
-  </script>
+    if (canvas._stars) {
+      canvas._stars.forEach(s => {
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(255,220,235,${0.15 + Math.abs(Math.sin(t*0.5 + s.x))*0.25})`;
+        ctx.fill();
+      });
+    }
 
-  <script src="script.js"></script>
+    t += 0.008;
+    requestAnimationFrame(drawBg);
+  }
+  drawBg();
+
+  /* ────────── Floating petals ────────── */
+  (function spawnPetals() {
+    const layer  = document.getElementById('petal-layer');
+    const glyphs = ['🌸','🌺','🌹','💮','✿','❀','🍃'];
+    setInterval(() => {
+      const el = document.createElement('span');
+      el.className = 'petal';
+      el.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
+      el.style.left   = Math.random() * 100 + 'vw';
+      el.style.fontSize = (10 + Math.random() * 14) + 'px';
+      const dur = 7 + Math.random() * 8;
+      el.style.animationDuration  = dur + 's';
+      el.style.animationDelay     = Math.random() * 3 + 's';
+      el.style.opacity = 0.3 + Math.random() * 0.35;
+      layer.appendChild(el);
+      setTimeout(() => el.remove(), (dur + 4) * 1000);
+    }, 700);
+  })();
+
+  /* ────────── Password logic ────────── */
+  const ANSWERS   = ['panda','🐼','doll'];
+  let   attemptsLeft = 3;
+  let   eyeOpen      = false;
+
+  function toggleEye() {
+    eyeOpen = !eyeOpen;
+    const inp = document.getElementById('pwd-input');
+    inp.type  = eyeOpen ? 'text' : 'password';
+    document.getElementById('eye-btn').textContent = eyeOpen ? '🙈' : '👁';
+  }
+
+  document.getElementById('pwd-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') checkPassword();
+  });
+
+  function checkPassword() {
+    const val = document.getElementById('pwd-input').value.trim().toLowerCase();
+    if (ANSWERS.includes(val)) {
+      // Correct!
+      document.getElementById('pwd-input').style.borderColor = '#5cdb8f';
+      setTimeout(() => { window.location.href = 'yes.html'; }, 600);
+      return;
+    }
+    // Wrong
+    attemptsLeft--;
+    const inp = document.getElementById('pwd-input');
+    inp.classList.remove('shake');
+    void inp.offsetWidth;
+    inp.classList.add('shake');
+    inp.value = '';
+
+    const dotEl = document.getElementById('d' + (4 - attemptsLeft - (3 - attemptsLeft)));
+    // Update dots
+    document.querySelectorAll('.dot').forEach((d,i) => {
+      if (i >= attemptsLeft) d.classList.add('lost');
+    });
+
+    const hint = document.getElementById('hint-text');
+    if (attemptsLeft <= 0) {
+      hint.textContent = 'No chances left 💔';
+      setTimeout(showDenied, 800);
+    } else {
+      hint.textContent = attemptsLeft + (attemptsLeft === 1 ? ' chance remaining' : ' chances remaining');
+    }
+  }
+
+  function showDenied() {
+    document.getElementById('lock-screen').style.display  = 'none';
+    document.getElementById('denied-screen').style.display = 'flex';
+  }
+
+  function resetLock() {
+    attemptsLeft = 3;
+    document.querySelectorAll('.dot').forEach(d => d.classList.remove('lost'));
+    document.getElementById('hint-text').textContent = '3 chances remaining';
+    document.getElementById('pwd-input').value = '';
+    document.getElementById('denied-screen').style.display = 'none';
+    document.getElementById('lock-screen').style.display   = 'flex';
+  }
+</script>
 </body>
 </html>
