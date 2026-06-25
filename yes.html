@@ -532,7 +532,7 @@
 </audio>
 <button id="music-btn" onclick="toggleMusic()" title="Toggle music">🔊</button>
 
-<script>
+<script type="module">
 /* ══════════════════════════════════════════════════
    CANVAS — animated deep rose nebula
 ══════════════════════════════════════════════════ */
@@ -698,30 +698,40 @@ function showToast(msg) {
 }
 
 /* ══════════════════════════════════════════════════
-   PERSISTENT MESSAGE WALL
-   Uses localStorage — stays forever across sessions
+   FIREBASE — real-time message wall
+   Visible on ANY device, saved in the cloud forever
 ══════════════════════════════════════════════════ */
-const MSG_KEY = 'panda_wall_messages_v1';
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot, orderBy, query, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-function loadMessages() {
-  try {
-    return JSON.parse(localStorage.getItem(MSG_KEY) || '[]');
-  } catch { return []; }
-}
+const firebaseConfig = {
+  apiKey:            "AIzaSyCvi2aSdkckODXzkzuDqg3YpfKlupt5Gug",
+  authDomain:        "panda-30d7f.firebaseapp.com",
+  projectId:         "panda-30d7f",
+  storageBucket:     "panda-30d7f.firebasestorage.app",
+  messagingSenderId: "316320865260",
+  appId:             "1:316320865260:web:b56189edff9536299efec9"
+};
 
-function saveMessages(msgs) {
-  try { localStorage.setItem(MSG_KEY, JSON.stringify(msgs)); } catch(e) {}
-}
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+const col = collection(db, 'messages');
 
 function formatDate(ts) {
-  const d = new Date(ts);
+  if (!ts) return '';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
   return d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) +
          ' · ' + d.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
 }
 
-function renderMessages() {
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+          .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function renderMessages(msgs) {
   const list = document.getElementById('msg-list');
-  const msgs  = loadMessages();
   if (!msgs.length) {
     list.innerHTML = `<div class="empty-state">
       <span class="big">🌸</span>
@@ -729,7 +739,7 @@ function renderMessages() {
     </div>`;
     return;
   }
-  list.innerHTML = msgs.slice().reverse().map(m => `
+  list.innerHTML = msgs.map(m => `
     <div class="msg-card">
       <div class="msg-header">
         <span class="msg-time">${formatDate(m.ts)}</span>
@@ -739,10 +749,12 @@ function renderMessages() {
   `).join('');
 }
 
-function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-          .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-}
+// Live listener — updates instantly on all devices
+const q = query(col, orderBy('ts', 'desc'));
+onSnapshot(q, snap => {
+  const msgs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  renderMessages(msgs);
+});
 
 function updateCount() {
   const ta   = document.getElementById('msg-text');
@@ -750,35 +762,37 @@ function updateCount() {
   span.textContent = ta.value.length + ' / 500';
 }
 
-function sendMessage() {
+async function sendMessage() {
   const textEl = document.getElementById('msg-text');
   const text   = textEl.value.trim();
-
   if (!text) { showToast('Write something first 🥺'); return; }
 
-  const msgs = loadMessages();
-  msgs.push({ text, ts: Date.now() });
-  saveMessages(msgs);
-
-  nameEl.value = '';
-  textEl.value = '';
-  updateCount();
-  renderMessages();
-  showToast('Message saved forever 💌');
-
-  // Scroll to newest message
-  setTimeout(() => {
-    const first = document.querySelector('.msg-card');
-    if (first) first.scrollIntoView({behavior:'smooth', block:'nearest'});
-  }, 200);
+  const btn = document.getElementById('send-btn');
+  btn.disabled = true;
+  try {
+    await addDoc(col, { text, ts: serverTimestamp() });
+    textEl.value = '';
+    updateCount();
+    showToast('Message saved forever 💌');
+    setTimeout(() => {
+      const first = document.querySelector('.msg-card');
+      if (first) first.scrollIntoView({behavior:'smooth', block:'nearest'});
+    }, 300);
+  } catch(e) {
+    showToast('Something went wrong 😢 try again');
+  }
+  btn.disabled = false;
 }
 
-// Allow Enter+Shift or Cmd+Enter in textarea, just Enter sends
+window.sendMessage  = sendMessage;
+window.toggleMusic  = toggleMusic;
+window.handleYes    = handleYes;
+window.runAway      = runAway;
+
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('msg-text').addEventListener('keydown', e => {
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) sendMessage();
   });
-  renderMessages();
 });
 </script>
 </body>
