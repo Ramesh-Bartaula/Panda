@@ -114,10 +114,10 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* GIF frame */
+    /* GIF frame — hero */
     .gif-frame {
       width: 160px; height: 160px;
-      border-radius: 50%;
+      border-radius: 20px;
       border: 2.5px solid rgba(232,67,106,0.5);
       box-shadow:
         0 0 0 6px rgba(232,67,106,0.08),
@@ -130,6 +130,18 @@
       50%      { transform: scale(1.04); box-shadow: 0 0 0 10px rgba(232,67,106,0.14), 0 24px 70px rgba(0,0,0,0.55); }
     }
     .gif-frame img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* YES reveal image — bigger, rounded rect, not circle */
+    .yes-img-frame {
+      width: 200px; height: 200px;
+      border-radius: 24px;
+      border: 2.5px solid rgba(232,67,106,0.55);
+      box-shadow: 0 0 0 8px rgba(232,67,106,0.1), 0 24px 64px rgba(0,0,0,0.55);
+      overflow: hidden;
+      margin-bottom: 4px;
+      animation: breathe 4s ease-in-out infinite;
+    }
+    .yes-img-frame img { width: 100%; height: 100%; object-fit: cover; }
 
     /* YES / NO buttons */
     .choice-row {
@@ -168,8 +180,10 @@
       font-family: 'DM Sans', sans-serif;
       font-size: 1.05rem;
       cursor: pointer;
-      transition: transform 0.18s, border-color 0.18s, color 0.18s;
-      position: relative;
+      transition: border-color 0.18s, color 0.18s;
+      /* Always fixed so it never escapes off-screen */
+      position: fixed;
+      z-index: 40;
     }
     .btn-no:hover { color: var(--text-main); border-color: var(--rose-soft); }
 
@@ -201,33 +215,43 @@
     /* ── Scroll cue ── */
     .scroll-cue {
       position: absolute;
-      bottom: 32px;
+      bottom: 28px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 6px;
-      color: var(--text-sub);
-      font-size: 0.75rem;
-      letter-spacing: 0.12em;
+      gap: 8px;
+      color: var(--rose-soft);
+      font-size: 0.78rem;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
-      animation: fadeUp 1s 1.5s ease both;
+      animation: fadeUp 1s 2s ease both;
       cursor: pointer;
       z-index: 10;
       text-decoration: none;
     }
+    .scroll-cue span {
+      background: rgba(232,67,106,0.15);
+      border: 1px solid rgba(232,67,106,0.35);
+      border-radius: 20px;
+      padding: 5px 14px;
+      animation: glowPulse 2s ease-in-out infinite;
+    }
+    @keyframes glowPulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(232,67,106,0); opacity: 0.8; }
+      50%      { box-shadow: 0 0 12px 4px rgba(232,67,106,0.3); opacity: 1; }
+    }
     .scroll-arrow {
-      width: 20px; height: 20px;
-      border-right: 1.5px solid var(--rose-soft);
-      border-bottom: 1.5px solid var(--rose-soft);
+      width: 18px; height: 18px;
+      border-right: 2px solid var(--rose-soft);
+      border-bottom: 2px solid var(--rose-soft);
       transform: rotate(45deg);
-      animation: arrowBounce 1.8s ease-in-out infinite;
-      opacity: 0.6;
+      animation: arrowBounce 1.4s ease-in-out infinite;
     }
     @keyframes arrowBounce {
-      0%,100% { transform: rotate(45deg) translateY(0); }
-      50%      { transform: rotate(45deg) translateY(6px); }
+      0%,100% { transform: rotate(45deg) translateY(0); opacity: 0.6; }
+      50%      { transform: rotate(45deg) translateY(7px); opacity: 1; }
     }
 
     /* ═══════════════════════════════════════
@@ -476,15 +500,19 @@
     </div>
 
     <a class="scroll-cue" href="#messages-section">
-      leave a note
+      <span>💌 leave her a message below</span>
       <div class="scroll-arrow"></div>
     </a>
   </section>
 
   <!-- YES Reveal (replaces choice row) -->
   <section id="yes-reveal">
-    <div class="gif-frame" style="width:180px;height:180px;margin-bottom:8px;">
-      <img src="https://media.tenor.com/tQ9E4IU8GtoAAAAj/cute-love.gif" alt="love">
+    <div class="yes-img-frame">
+      <img
+        src="https://media.tenor.com/tQ9E4IU8GtoAAAAj/cute-love.gif"
+        alt="love"
+        onerror="this.src='https://media.tenor.com/EBV7OT7ACfwAAAAj/u-u-qua-qua-u-quaa.gif'"
+      >
     </div>
     <p class="yes-big">I knew you'd say <span>Yes</span> 🎉</p>
     <p class="yes-body">
@@ -506,7 +534,7 @@
       <textarea
         id="msg-text"
         class="compose-textarea"
-        placeholder=" Unsaid and Unspoken 💕"
+        placeholder="Write something from your heart… it'll live here forever 💕"
         maxlength="500"
         oninput="updateCount()"
       ></textarea>
@@ -645,18 +673,29 @@ const noTeases = [
 let noCount = 0;
 
 function runAway(btn) {
-  const rect = btn.getBoundingClientRect();
-  const maxX = window.innerWidth  - rect.width;
-  const maxY = window.innerHeight - rect.height;
-  const randX = Math.max(10, Math.min(maxX-10, Math.random()*maxX));
-  const randY = Math.max(10, Math.min(maxY-10, Math.random()*maxY));
-  btn.style.position  = 'fixed';
-  btn.style.left = randX+'px';
-  btn.style.top  = randY+'px';
-  btn.style.zIndex = 40;
+  const bW = btn.offsetWidth  || 120;
+  const bH = btn.offsetHeight || 52;
+  const pad = 16;
+  const maxX = window.innerWidth  - bW - pad;
+  const maxY = window.innerHeight - bH - pad;
+  // Pick a random spot guaranteed to stay on screen
+  const randX = pad + Math.random() * (maxX - pad);
+  const randY = pad + Math.random() * (maxY - pad);
+  btn.style.left = randX + 'px';
+  btn.style.top  = randY + 'px';
   showToast(noTeases[noCount % noTeases.length]);
   noCount++;
 }
+
+// Place No button at a nice starting position on load
+window.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('no-btn');
+  if (btn) {
+    // Start it bottom-right area, always visible
+    btn.style.left = (window.innerWidth  - 160) + 'px';
+    btn.style.top  = (window.innerHeight - 80)  + 'px';
+  }
+});
 
 function handleYes() {
   document.getElementById('choice-row').style.display = 'none';
