@@ -365,11 +365,11 @@
         id="msg-text"
         class="compose-textarea"
         placeholder="Anything in your heart… remains forever 💕"
-        maxlength="500"
+        maxlength="6000"
         oninput="updateCount()"
       ></textarea>
       <div class="compose-footer">
-        <span class="char-count" id="char-count">0 / 500</span>
+        <span class="char-count" id="char-count">0 / 6000</span>
         <button class="send-btn" id="send-btn" onclick="sendMessage()">Send 💌</button>
       </div>
     </div>
@@ -576,7 +576,7 @@ onSnapshot(q,snap=>{
 
 function updateCount(){
   const ta=document.getElementById('msg-text');
-  document.getElementById('char-count').textContent=ta.value.length+' / 500';
+  document.getElementById('char-count').textContent=ta.value.length+' / 6000';
 }
 async function sendMessage(){
   const textEl=document.getElementById('msg-text');
