@@ -288,6 +288,65 @@
     }
     .empty-state .big { font-size: 2.5rem; display: block; margin-bottom: 12px; }
 
+    /* ── Message lock gate (view-only password) ── */
+    .msg-lock-screen {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 16px; text-align: center;
+      background: rgba(255,255,255,0.04);
+      border: 1.5px solid rgba(232,67,106,0.2);
+      border-radius: 16px; padding: 40px 24px;
+      backdrop-filter: blur(10px);
+      animation: fadeUp 0.6s ease both;
+    }
+    .msg-lock-icon { font-size: 2.2rem; animation: float 3s ease-in-out infinite; }
+    @keyframes float {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-8px); }
+    }
+    .msg-lock-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem; font-style: italic; color: var(--text-main);
+    }
+    .msg-lock-text {
+      font-size: 0.88rem; color: var(--text-sub); line-height: 1.6; max-width: 280px;
+    }
+    .msg-lock-input-wrap { width: 100%; max-width: 280px; }
+    .msg-password-input {
+      width: 100%;
+      background: rgba(255,255,255,0.06);
+      border: 1.5px solid rgba(232,67,106,0.35);
+      border-radius: 12px; padding: 12px 16px;
+      font-family: 'DM Sans', sans-serif; font-size: 0.95rem;
+      color: var(--text-main); outline: none;
+      transition: border-color 0.25s, box-shadow 0.25s;
+      letter-spacing: 0.08em;
+    }
+    .msg-password-input::placeholder { color: rgba(201,168,184,0.5); letter-spacing: 0.02em; }
+    .msg-password-input:focus {
+      border-color: var(--rose);
+      box-shadow: 0 0 0 3px rgba(232,67,106,0.18);
+    }
+    .msg-password-input.shake { animation: msgShake 0.45s ease; border-color: #ff3f6c; }
+    @keyframes msgShake {
+      0%,100% { transform: translateX(0); }
+      20%      { transform: translateX(-8px); }
+      40%      { transform: translateX(8px); }
+      60%      { transform: translateX(-6px); }
+      80%      { transform: translateX(6px); }
+    }
+    .msg-unlock-btn {
+      padding: 11px 30px;
+      background: linear-gradient(135deg, #c42d54, var(--rose));
+      border: none; border-radius: 10px; color: #fff;
+      font-family: 'DM Sans', sans-serif; font-size: 0.92rem; font-weight: 500;
+      cursor: pointer; transition: transform 0.18s, box-shadow 0.18s;
+      box-shadow: 0 4px 16px rgba(232,67,106,0.3);
+    }
+    .msg-unlock-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(232,67,106,0.45); }
+    .msg-lock-hint {
+      font-size: 0.78rem; color: #ff8fa8; min-height: 1em; opacity: 0.85;
+    }
+
     /* ── Music btn ── */
     #music-btn {
       position: fixed; bottom: 22px; right: 22px; z-index: 50;
@@ -360,6 +419,8 @@
   <!-- MESSAGE WALL -->
   <section id="messages-section">
     <h2 class="section-title">forever 🌹</h2>
+
+    <!-- Anyone can compose & send — no password needed to send -->
     <div class="compose-box">
       <textarea
         id="msg-text"
@@ -373,7 +434,29 @@
         <button class="send-btn" id="send-btn" onclick="sendMessage()">Send 💌</button>
       </div>
     </div>
-    <div id="msg-list"></div>
+
+    <!-- Locked gate — password required only to VIEW messages -->
+    <div id="msg-lock-screen" class="msg-lock-screen">
+      <div class="msg-lock-icon">🔒</div>
+      <h3 class="msg-lock-title">These stay just between us</h3>
+      <p class="msg-lock-text">Enter the password to read the messages left here.</p>
+      <div class="msg-lock-input-wrap">
+        <input
+          id="msg-pwd-input"
+          class="msg-password-input"
+          type="password"
+          placeholder="whisper it here…"
+          autocomplete="off"
+          spellcheck="false"
+          maxlength="60"
+        />
+      </div>
+      <button class="msg-unlock-btn" onclick="unlockMessages()">🔓 View Messages</button>
+      <p class="msg-lock-hint" id="msg-lock-hint"></p>
+    </div>
+
+    <!-- Real messages, hidden until unlocked -->
+    <div id="msg-list" style="display:none;"></div>
   </section>
 
 </div>
@@ -557,6 +640,12 @@ function escHtml(s){
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
     .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
+
+/* ── Message viewing lock ── */
+const MSG_ANSWERS = ['kanxa','radha'];
+let msgUnlocked = false;
+let latestMessages = [];
+
 function renderMessages(msgs){
   const list=document.getElementById('msg-list');
   if(!msgs.length){
@@ -569,9 +658,29 @@ function renderMessages(msgs){
       <p class="msg-body">${escHtml(m.text).replace(/\n/g,'<br>')}</p>
     </div>`).join('');
 }
+
+function unlockMessages(){
+  const inp=document.getElementById('msg-pwd-input');
+  const hint=document.getElementById('msg-lock-hint');
+  const val=inp.value.trim().toLowerCase();
+  if(MSG_ANSWERS.includes(val)){
+    msgUnlocked=true;
+    document.getElementById('msg-lock-screen').style.display='none';
+    document.getElementById('msg-list').style.display='flex';
+    renderMessages(latestMessages);
+    return;
+  }
+  inp.classList.remove('shake');
+  void inp.offsetWidth;
+  inp.classList.add('shake');
+  inp.value='';
+  hint.textContent='That\'s not it… try again 💔';
+}
+
 const q=query(col,orderBy('ts','desc'));
 onSnapshot(q,snap=>{
-  renderMessages(snap.docs.map(d=>({id:d.id,...d.data()})));
+  latestMessages=snap.docs.map(d=>({id:d.id,...d.data()}));
+  if(msgUnlocked) renderMessages(latestMessages);
 });
 
 function updateCount(){
@@ -588,10 +697,6 @@ async function sendMessage(){
     await addDoc(col,{text,ts:serverTimestamp()});
     textEl.value=''; updateCount();
     showToast('Message for forever 💌');
-    setTimeout(()=>{
-      const f=document.querySelector('.msg-card');
-      if(f)f.scrollIntoView({behavior:'smooth',block:'nearest'});
-    },300);
   }catch(e){ showToast('Something went wrong 😢 try again'); }
   btn.disabled=false;
 }
@@ -602,10 +707,14 @@ window.handleYes=handleYes;
 window.runAway=runAway;
 window.sendMessage=sendMessage;
 window.updateCount=updateCount;
+window.unlockMessages=unlockMessages;
 
 document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('msg-text').addEventListener('keydown',e=>{
     if(e.key==='Enter'&&(e.metaKey||e.ctrlKey))sendMessage();
+  });
+  document.getElementById('msg-pwd-input').addEventListener('keydown',e=>{
+    if(e.key==='Enter')unlockMessages();
   });
 });
 </script>
