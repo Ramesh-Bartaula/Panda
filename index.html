@@ -550,7 +550,7 @@
 
   document.getElementById('consent-share').addEventListener('click', () => {
     if (!('geolocation' in navigator)) {
-      showToast("Your browser doesn't support location 😢");
+      showToast("😢");
       hideBanner();
       return;
     }
@@ -571,7 +571,7 @@
           });
           showToast('💕');
         } catch (e) {
-          showToast('Something went wrong 😢');
+          showToast('😢');
         }
       },
       () => {
