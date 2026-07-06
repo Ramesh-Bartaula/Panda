@@ -246,6 +246,67 @@
       50%  { transform: translateY(50vh) rotate(180deg) translateX(30px); }
       100% { transform: translateY(110vh) rotate(360deg) translateX(-20px); opacity: 0; }
     }
+
+    /* ── Consent banner ── */
+    .consent-banner {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%) translateY(140%);
+      z-index: 100;
+      width: min(92vw, 420px);
+      background: rgba(28, 18, 32, 0.96);
+      border: 1.5px solid rgba(232,67,106,0.35);
+      border-radius: 16px;
+      padding: 18px 20px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+      backdrop-filter: blur(6px);
+      transition: transform 0.5s cubic-bezier(.2,.9,.3,1);
+    }
+    .consent-banner.show { transform: translateX(-50%) translateY(0); }
+    .consent-text {
+      font-size: 0.88rem;
+      color: var(--text-main);
+      line-height: 1.55;
+      margin-bottom: 14px;
+    }
+    .consent-text b { color: var(--rose-soft); }
+    .consent-actions { display: flex; gap: 10px; }
+    .consent-btn {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: transform 0.15s, opacity 0.15s;
+    }
+    .consent-btn:active { transform: scale(0.97); }
+    .consent-btn.share {
+      border: none;
+      background: linear-gradient(135deg, #c42d54 0%, var(--rose) 60%, #f06882 100%);
+      color: #fff;
+    }
+    .consent-btn.decline {
+      background: transparent;
+      border: 1.5px solid rgba(255,255,255,0.18);
+      color: var(--text-sub);
+    }
+    .consent-toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%) translateY(140%);
+      z-index: 100;
+      background: rgba(28,18,32,0.96);
+      border: 1.5px solid rgba(232,67,106,0.3);
+      color: var(--text-main);
+      padding: 12px 18px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      transition: transform 0.4s ease;
+    }
+    .consent-toast.show { transform: translateX(-50%) translateY(0); }
   </style>
 </head>
 <body>
@@ -297,6 +358,16 @@
   </div>
 
 </div>
+
+<!-- Consent banner: location is only requested/stored if the visitor taps "Share" -->
+<div class="consent-banner" id="consent-banner">
+  <p class="consent-text">Want to let me know you saw this? 🥺 Tapping <b>Share</b> will ask your browser's permission to grab your approximate location — it might be stored so I know you stopped by.</p>
+  <div class="consent-actions">
+    <button class="consent-btn decline" id="consent-decline">No thanks</button>
+    <button class="consent-btn share" id="consent-share">Share 💕</button>
+  </div>
+</div>
+<div class="consent-toast" id="consent-toast"></div>
 
 <script>
   /* ──────────────────────────────────────────
@@ -434,6 +505,83 @@
     document.getElementById('denied-screen').style.display = 'none';
     document.getElementById('lock-screen').style.display   = 'flex';
   }
+</script>
+
+<script type="module">
+  /* ── Firebase (same project used for messages in yes.html) ── */
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCvi2aSdkckODXzkzuDqg3YpfKlupt5Gug",
+    authDomain: "panda-30d7f.firebaseapp.com",
+    projectId: "panda-30d7f",
+    storageBucket: "panda-30d7f.firebasestorage.app",
+    messagingSenderId: "316320865260",
+    appId: "1:316320865260:web:b56189edff9536299efec9"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+  const visitsCol = collection(db, 'visits');
+
+  const banner = document.getElementById('consent-banner');
+  const toastEl = document.getElementById('consent-toast');
+
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    setTimeout(() => toastEl.classList.remove('show'), 2600);
+  }
+
+  function hideBanner() {
+    banner.classList.remove('show');
+  }
+
+  // Only show once per browser session so it's not annoying on repeat visits/reloads
+  if (!sessionStorage.getItem('consentAsked')) {
+    setTimeout(() => banner.classList.add('show'), 1200);
+  }
+  sessionStorage.setItem('consentAsked', '1');
+
+  document.getElementById('consent-decline').addEventListener('click', () => {
+    hideBanner();
+  });
+
+  document.getElementById('consent-share').addEventListener('click', () => {
+    if (!('geolocation' in navigator)) {
+      showToast("Your browser doesn't support location 😢");
+      hideBanner();
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        hideBanner();
+        try {
+          await addDoc(visitsCol, {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            accuracyMeters: pos.coords.accuracy,
+            userAgent: navigator.userAgent,
+            platform: navigator.platform,
+            language: navigator.language,
+            screen: `${window.screen.width}x${window.screen.height}`,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            ts: serverTimestamp()
+          });
+          showToast('Thank you 💕');
+        } catch (e) {
+          showToast('Something went wrong 😢');
+        }
+      },
+      () => {
+        // Permission denied or unavailable — store nothing
+        hideBanner();
+        showToast('No worries 💕');
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  });
 </script>
 </body>
 </html>
